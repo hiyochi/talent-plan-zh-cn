@@ -1,3 +1,4 @@
+```rust
 mod bitset;
 pub mod model;
 pub mod models;
@@ -27,6 +28,7 @@ struct Entry<T> {
     pub time: i64,
 }
 
+// 将操作历史转换为条目列表
 fn make_entries<I: Debug, O: Debug>(history: Operations<I, O>) -> Vec<Entry<Value<I, O>>> {
     let mut entries = Vec::new();
     for (id, elem) in history.into_iter().enumerate() {
@@ -60,6 +62,7 @@ impl<T: Debug> LinkedNodes<T> {
         self.head.clone()
     }
 
+    // 从条目列表构建链表
     pub fn from_entries(entries: Vec<Entry<T>>) -> Self {
         let mut matches: HashMap<usize, LinkNode<T>> = HashMap::new();
         let mut nodes = Self::new();
@@ -124,9 +127,10 @@ struct Node<T: Debug> {
     pub prev: Option<LinkNode<T>>,
 }
 
+// 重新编号事件
 fn renumber<T>(events: Vec<Event<T>>) -> Vec<Event<T>> {
     let mut e = Vec::new();
-    let mut m: HashMap<usize, usize> = HashMap::new(); // renumbering
+    let mut m: HashMap<usize, usize> = HashMap::new(); // 重新编号映射
     let mut id: usize = 0;
     for event in events {
         e.push(Event {
@@ -141,6 +145,7 @@ fn renumber<T>(events: Vec<Event<T>>) -> Vec<Event<T>> {
     e
 }
 
+// 将事件转换为条目
 fn convert_entries<T>(events: Vec<Event<T>>) -> Vec<Entry<T>> {
     let mut entries = Vec::new();
     for event in events {
@@ -167,6 +172,7 @@ struct CacheEntry<T> {
     state: T,
 }
 
+// 检查缓存中是否包含指定条目
 fn cache_contains<M: Model>(
     model: &M,
     cache: &HashMap<u64, Vec<CacheEntry<M::State>>>,
@@ -187,6 +193,7 @@ struct CallsEntry<V: Debug, T> {
     state: T,
 }
 
+// 提升节点（从链表中移除）
 fn lift<T: Debug>(entry: &LinkNode<T>) {
     let prev = Ref::map(entry.borrow(), |e| e.prev.as_ref().unwrap());
     prev.borrow_mut().next = entry.borrow().next.clone();
@@ -202,6 +209,7 @@ fn lift<T: Debug>(entry: &LinkNode<T>) {
     }
 }
 
+// 恢复节点（重新插入链表）
 fn unlift<T: Debug>(entry: &LinkNode<T>) {
     {
         let matched = Ref::map(entry.borrow(), |e| e.matched.as_ref().unwrap());
@@ -219,6 +227,7 @@ fn unlift<T: Debug>(entry: &LinkNode<T>) {
     next.borrow_mut().prev = Some(entry.clone());
 }
 
+// 检查单个子历史是否满足模型
 fn check_single<M: Model>(
     model: M,
     mut subhistory: LinkedNodes<Value<M::Input, M::Output>>,
@@ -245,7 +254,7 @@ fn check_single<M: Model>(
         }
         let matched = entry.as_ref().unwrap().borrow().matched.clone();
         entry = if let Some(matching) = matched {
-            // the return entry
+            // 处理返回条目
             let res = model.step(
                 &state,
                 entry.as_ref().unwrap().borrow().value.input(),
@@ -291,12 +300,13 @@ fn check_single<M: Model>(
     true
 }
 
+// 检查操作历史是否满足模型
 pub fn check_operations<M: Model>(model: M, history: Operations<M::Input, M::Output>) -> bool {
     check_operations_timeout(model, history, Duration::new(0, 0))
 }
 
-// timeout = 0 means no timeout
-// if this operation times out, then a false positive is possible
+// timeout = 0 表示无超时
+// 如果操作超时，则可能出现假阳性
 pub fn check_operations_timeout<M: Model>(
     model: M,
     history: Operations<M::Input, M::Output>,
@@ -326,12 +336,13 @@ pub fn check_operations_timeout<M: Model>(
     res
 }
 
+// 检查事件历史是否满足模型
 pub fn check_events<M: Model>(model: M, history: Events<M::Input, M::Output>) -> bool {
     check_events_timeout(model, history, Duration::new(0, 0))
 }
 
-// timeout = 0 means no timeout
-// if this operation times out, then a false positive is possible
+// timeout = 0 表示无超时
+// 如果操作超时，则可能出现假阳性
 pub fn check_events_timeout<M: Model>(
     model: M,
     history: Events<M::Input, M::Output>,
@@ -361,6 +372,7 @@ pub fn check_events_timeout<M: Model>(
     res
 }
 
+// 等待结果
 fn wait_res(
     rx: Receiver<bool>,
     kill: Arc<AtomicBool>,
@@ -391,3 +403,4 @@ fn wait_res(
     }
     ok
 }
+```

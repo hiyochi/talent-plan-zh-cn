@@ -26,16 +26,16 @@ func (d DataSize) String() string {
 	return fmt.Sprintf("%dGB", d/GB)
 }
 
-// Case represents a test case.
+// Case 表示一个测试用例。
 type Case struct {
-	MapFiles   []string // input files for map function
-	ResultFile string   // expected result
+	MapFiles   []string // map 函数的输入文件
+	ResultFile string   // 期望的结果文件
 }
 
-// CaseGenF represents test case generate function
+// CaseGenF 表示测试用例生成函数。
 type CaseGenF func(dataFileDir string, totalDataSize, nMapFiles int) Case
 
-// AllCaseGenFs returns all CaseGenFs used to test.
+// AllCaseGenFs 返回用于测试的所有 CaseGenF 函数。
 func AllCaseGenFs() []CaseGenF {
 	var gs []CaseGenF
 	gs = append(gs, genUniformCases()...)
@@ -117,7 +117,7 @@ func genPercentCases() []CaseGenF {
 				}
 			}
 
-			// make up percents list
+			// 构造百分比列表
 			percents := make([]float64, 0, p.l)
 			percents = append(percents, p.p...)
 			var sum float64
@@ -132,7 +132,7 @@ func genPercentCases() []CaseGenF {
 				percents = append(percents, x)
 			}
 
-			// generate data
+			// 生成数据
 			urls, avgLen := randomNURL(len(percents))
 			eachRecords := (totalDataSize / nMapFiles) / avgLen
 			files := make([]string, 0, nMapFiles)
@@ -172,7 +172,7 @@ func genPercentCases() []CaseGenF {
 	return gs
 }
 
-// CaseSingleURLPerFile .
+// CaseSingleURLPerFile 每个文件只包含一个唯一 URL 的测试用例生成器。
 func CaseSingleURLPerFile(dataFileDir string, totalDataSize, nMapFiles int) Case {
 	if FileOrDirExist(dataFileDir) {
 		files := make([]string, 0, nMapFiles)

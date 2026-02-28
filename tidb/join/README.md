@@ -1,57 +1,57 @@
-## Introduction
+## 引言
 
-This is the homework for PingCAP Talent Plan Online of week 4. This homework is a simplified version of [ACM SIGMOD Programming Contest 2018](http://sigmod18contest.db.in.tum.de/index.shtml).
+这是 PingCAP 人才计划在线课程第四周的作业。本作业是 [ACM SIGMOD 编程竞赛 2018](http://sigmod18contest.db.in.tum.de/index.shtml) 的简化版本。
 
-The task is to evaluate batches of join queries on a set of pre-defined relations. Each join query specifies two relations, multiple (equality) join predicates, and one (sum) aggregation. The challenge is to fully utilize the CPU and memory resources and execute the queries as fast as possible.
+任务是对一组预定义的关系执行批量连接查询。每个连接查询指定两个关系、多个（等值）连接条件，以及一个（求和）聚合操作。挑战在于充分利用 CPU 和内存资源，尽可能快速地执行查询。
 
-NOTE: **go 1.12 is required**
+**注意：必须使用 go 1.12**
 
-## Details
+## 详细说明
 
-The simple interface `Join(f0, f1 string, offset0, offset1 []int) (sum uint64)` is defined in `join.go`. Our test harness will feed two relations and two columns' offsets array to the interface every time, and check the correctness of the output result. Explaination to the four input arguments and one output argument of the interface are list as follows:
+在 `join.go` 中定义了简单接口 `Join(f0, f1 string, offset0, offset1 []int) (sum uint64)`。我们的测试框架会每次向该接口传入两个关系及其两列的偏移量数组，并验证输出结果的正确性。该接口的四个输入参数和一个输出参数说明如下：
 
-- **f0**: File name of the given relation0.
-- **f1**: File name of the given relation1.
-- **offset0**: Offsets of which columns the given relation0 should be joined.
-- **offset1**: Offsets of which columns the given relation1 should be joined.
-- **sum** (output argument): Sum of the relation0.col0 in the final join result.
+- **f0**：给定关系0的文件名。
+- **f1**：给定关系1的文件名。
+- **offset0**：关系0中用于连接的列的偏移量数组。
+- **offset1**：关系1中用于连接的列的偏移量数组。
+- **sum**（输出参数）：最终连接结果中 relation0.col0 的总和。
 
-The (equality) join predicates are specified by the `offset0/1`. The form of the join predicates is like:
-``` go
+（等值）连接条件由 `offset0/1` 指定，其形式如下：
+```go
 relation0.cols[offset[0]] = relation1.cols[offset[0]] and relation0.cols[offset[1]] = relation1.cols[offset[1]]...
 ```
 
-**Example**: `Join("/path/T0", "/path/T1", []int{0, 1}, []int{2, 3})`
+**示例**：`Join("/path/T0", "/path/T1", []int{0, 1}, []int{2, 3})`
 
-Translated to SQL:
+等价于 SQL：
 
-``` sql
+```sql
 SELECT SUM(T0.COL0)
 FROM T0, T1
 ON T0.COL0=T1.COL2 AND T0.COL1=T1.COL3
 ```
 
-We provide a sample as `join_example.go: JoinExample` which performs a simple hash join algorithm. It uses the relation0 to build the hash table, and probe the hash table for every row in relation1.
+我们提供了一个示例实现 `join_example.go: JoinExample`，它采用简单的哈希连接算法：使用关系0构建哈希表，然后对关系1中的每一行进行探测。
 
-## Requirements and rating principles
+## 要求与评分标准
 
-- (30%) Pass all test cases.
-- (20%) Perform better than `join_example.go:JoinExample`.
-- (35%) Have a document to describe your idea and record the process of performance optimization with `pprof`.
-- (15%) Keep a good code style.
+- （30%）通过所有测试用例。
+- （20%）性能优于 `join_example.go:JoinExample`。
+- （35%）提供文档，描述你的设计思路，并使用 `pprof` 记录性能优化过程。
+- （15%）保持良好的代码风格。
 
-Note:
-1. For your check sums, you do not have to worry about numeric overflows as long as you are using 64 bit unsigned integers.
-2. More large datasets are provided [here](https://drive.google.com/drive/u/1/folders/10-iJNGKmKXgMmvBYnKt88RTwC0iA1XM-), you can use them to help profile your program.
-3. We'll use the `BenchmarkJoin` and `BenchmarkJoinExample` which can be found in `benchmark_test.go` to evaluate your program. Test data will **NOT** be outside of what we've provided.
+**注意**：
+1. 对于你的校验和，只要使用 64 位无符号整数，无需担心数值溢出。
+2. 更多大型数据集请参见 [此处](https://drive.google.com/drive/u/1/folders/10-iJNGKmKXgMmvBYnKt88RTwC0iA1XM-)，可用于辅助分析程序性能。
+3. 我们将使用 `benchmark_test.go` 中的 `BenchmarkJoin` 和 `BenchmarkJoinExample` 来评估你的程序。测试数据**不会超出我们提供的范围**。
 
-## How to use
+## 使用方法
 
-1. Please implement your own `Join` in join.go to accomplish this task.
-2. We provide CSV versions (.tbl files) of three relations in directory `t`. You can load them into a DBMS to test your program.
-   1. **r0.tbl**: 2 columns * 10,000 records
-   2. **r1.tbl**: 4 columns * 5,000 records
-   3. **r2.tbl**: 4 columns * 500 records
-3. There is already a built-in unit test `JoinTest` defined in `join_test.go`. You can write your own unit tests, but please make sure `JoinTest` can be passed before.
-4. Use `make test` to run all the unit tests.
-5. Use `make bench` to run all the benchmarks.
+1. 请在 `join.go` 中实现你自己的 `Join` 函数以完成本任务。
+2. 我们在目录 `t` 中提供了三个关系的 CSV 格式文件（.tbl 文件），你可以将它们加载到数据库管理系统中进行测试。
+   1. **r0.tbl**：2 列 × 10,000 条记录
+   2. **r1.tbl**：4 列 × 5,000 条记录
+   3. **r2.tbl**：4 列 × 500 条记录
+3. `join_test.go` 中已内置单元测试 `JoinTest`。你可以编写自己的单元测试，但请确保在提交前 `JoinTest` 能够通过。
+4. 使用 `make test` 运行所有单元测试。
+5. 使用 `make bench` 运行所有基准测试。

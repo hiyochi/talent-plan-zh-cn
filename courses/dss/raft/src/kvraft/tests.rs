@@ -1,3 +1,4 @@
+```rust
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc;
 use std::sync::Arc;
@@ -20,13 +21,13 @@ use linearizability::models::{KvInput, KvModel, KvOutput, Op};
 use crate::kvraft::client::Clerk;
 use crate::kvraft::config::Config;
 
-/// The tester generously allows solutions to complete elections in one second
-/// (much more than the paper's range of timeouts).
+/// 测试者允许解决方案在一秒内完成选举
+/// （远超过论文中定义的超时范围）。
 const RAFT_ELECTION_TIMEOUT: Duration = Duration::from_millis(1000);
 
 const LINEARIZABILITY_CHECK_TIMEOUT: Duration = Duration::from_millis(1000);
 
-// get/put/append that keep counts
+// 执行 get/put/append 操作并统计次数
 fn get(cfg: &Config, ck: &Clerk, key: &str) -> String {
     let v = ck.get(key.to_owned());
     cfg.op();
@@ -50,7 +51,7 @@ fn check(cfg: &Config, ck: &Clerk, key: &str, value: &str) {
     }
 }
 
-// spawn ncli clients and wait until they are all done
+// 启动 ncli 个客户端并等待它们全部完成
 fn spawn_clients_and_wait<Func, Fact>(
     cfg: Arc<Config>,
     ncli: usize,
@@ -68,7 +69,7 @@ where
         }));
 
         let cfg_ = cfg.clone();
-        // a client runs the function func and then signals it is done
+        // 客户端运行函数 func，然后通知已完成
         let func = fact();
         thread::spawn(move || {
             let ck = cfg_.make_client(&cfg_.all());
@@ -81,13 +82,12 @@ where
     future::join_all(cas).map(|_| ())
 }
 
-// predict effect of append(k, val) if old value is prev.
+// 预测 append(k, val) 操作对旧值 prev 的影响
 fn next_value(prev: String, val: &str) -> String {
     prev + val
 }
 
-// check that for a specific client all known appends are present in a value,
-// and in order
+// 检查特定客户端的所有已知 append 操作是否按顺序出现在值中
 fn check_clnt_appends(clnt: usize, v: String, count: usize) {
     let mut lastoff = None;
     for j in 0..count {
@@ -113,8 +113,7 @@ fn check_clnt_appends(clnt: usize, v: String, count: usize) {
     }
 }
 
-// check that all known appends are present in a value,
-// and are in order for each concurrent client.
+// 检查所有已知 append 操作是否按每个并发客户端的顺序出现在值中
 #[allow(clippy::needless_range_loop)]
 fn check_concurrent_appends(v: String, counts: &[usize]) {
     let nclients = counts.len();
@@ -144,7 +143,7 @@ fn check_concurrent_appends(v: String, counts: &[usize]) {
     }
 }
 
-// repartition the servers periodically
+// 定期重新划分服务器分区
 fn partitioner(
     cfg: Arc<Config>,
     ch: mpsc::Sender<bool>,
@@ -154,7 +153,7 @@ fn partitioner(
         Delay::new(RAFT_ELECTION_TIMEOUT + Duration::from_millis(r % 200))
     }
 
-    // Context of the poll_fn.
+    // poll_fn 的上下文
     let mut all = cfg.all();
     let mut sleep = None;
     let mut is_parked = false;
@@ -178,14 +177,12 @@ fn partitioner(
     })
 }
 
-// Basic test is as follows: one or more clients submitting Append/Get
-// operations to set of servers for some period of time.  After the period is
-// over, test checks that all appended values are present and in order for a
-// particular key.  If unreliable is set, RPCs may fail.  If crash is set, the
-// servers crash after the period is over and restart.  If partitions is set,
-// the test repartitions the network concurrently with the clients and servers. If
-// maxraftstate is a positive number, the size of the state for Raft (i.e., log
-// size) shouldn't exceed 2*maxraftstate.
+// 基本测试如下：一个或多个客户端在一段时间内向一组服务器提交 Append/Get 操作。
+// 在时间段结束后，测试检查特定键的所有追加值是否按顺序存在。
+// 如果 unreliable 为 true，则 RPC 可能失败。
+// 如果 crash 为 true，则服务器在时间段结束后崩溃并重启。
+// 如果 partitions 为 true，则测试会与客户端和服务器并发地重新划分网络。
+// 如果 maxraftstate 为正数，则 Raft 状态的大小（即日志大小）不应超过 2*maxraftstate。
 fn generic_test(
     part: &str,
     nclients: usize,
@@ -196,15 +193,15 @@ fn generic_test(
 ) {
     let mut title = "Test: ".to_owned();
     if unreliable {
-        // the network drops RPC requests and replies.
+        // 网络会丢弃 RPC 请求和响应
         title += "unreliable net, ";
     }
     if crash {
-        // peers re-start, and thus persistence must work.
+        // 节点重启，因此持久化必须正常工作
         title += "restarts, ";
     }
     if partitions {
-        // the network may partition
+        // 网络可能会分区
         title += "partitions, ";
     }
     if maxraftstate.is_some() {
@@ -215,7 +212,7 @@ fn generic_test(
     } else {
         title += "one client";
     }
-    title = format!("{} ({})", title, part); // 3A or 3B
+    title = format!("{} ({})", title, part); // 3A 或 3B
 
     const NSERVERS: usize = 5;
     let cfg = Arc::new(Config::new(NSERVERS, unreliable, maxraftstate));
@@ -248,7 +245,7 @@ fn generic_test(
                     let clnt_txs1 = clnt_txs_.clone();
                     let done_clients1 = done_clients_.clone();
                     move |cli, myck| {
-                        // TODO: change the closure to a future.
+                        // TODO: 将闭包改为 future
                         let mut j = 0;
                         let mut rng = rand::thread_rng();
                         let mut last = String::new();
@@ -280,7 +277,7 @@ fn generic_test(
         });
 
         if partitions {
-            // Allow the clients to perform some operations without interruption
+            // 允许客户端在无干扰的情况下执行一些操作
             thread::sleep(Duration::from_secs(1));
             cfg.net.spawn_poller(partitioner(
                 cfg.clone(),
@@ -290,20 +287,18 @@ fn generic_test(
         }
         thread::sleep(Duration::from_secs(5));
 
-        // tell clients to quit
+        // 通知客户端退出
         done_clients.store(1, Ordering::Relaxed);
-        // tell partitioner to quit
+        // 通知分区器退出
         done_partitioner.store(1, Ordering::Relaxed);
 
         if partitions {
             debug!("wait for partitioner");
             partitioner_rx.recv().unwrap();
-            // reconnect network and submit a request. A client may
-            // have submitted a request in a minority.  That request
-            // won't return until that server discovers a new term
-            // has started.
+            // 重新连接网络并提交请求。客户端可能在少数派中提交了请求，
+            // 该请求直到服务器发现新任期开始才会返回
             cfg.connect_all();
-            // wait for a while so that we have a new term
+            // 等待一段时间以确保新任期开始
             thread::sleep(RAFT_ELECTION_TIMEOUT);
         }
 
@@ -312,11 +307,10 @@ fn generic_test(
             for i in 0..NSERVERS {
                 cfg.shutdown_server(i)
             }
-            // Wait for a while for servers to shutdown, since
-            // shutdown isn't a real crash and isn't instantaneous
+            // 等待一段时间让服务器关闭，因为 shutdown 不是真正的崩溃，也不是瞬时的
             thread::sleep(RAFT_ELECTION_TIMEOUT);
             debug!("restart servers");
-            // crash and re-start all
+            // 崩溃并重启所有服务器
             for i in 0..NSERVERS {
                 cfg.start_server(i);
             }
@@ -340,8 +334,7 @@ fn generic_test(
         }
 
         if let Some(maxraftstate) = maxraftstate {
-            // Check maximum after the servers have processed all client
-            // requests and had time to checkpoint.
+            // 在所有服务器处理完客户端请求并有时间进行快照后检查最大值
             if cfg.log_size() > 2 * maxraftstate {
                 panic!(
                     "logs were not trimmed ({} > 2*{})",
@@ -367,15 +360,15 @@ fn generic_test_linearizability(
 ) {
     let mut title = "Test: ".to_owned();
     if unreliable {
-        // the network drops RPC requests and replies.
+        // 网络会丢弃 RPC 请求和响应
         title += "unreliable net, ";
     }
     if crash {
-        // peers re-start, and thus persistence must work.
+        // 节点重启，因此持久化必须正常工作
         title += "restarts, ";
     }
     if partitions {
-        // the network may partition
+        // 网络可能会分区
         title += "partitions, ";
     }
     if maxraftstate.is_some() {
@@ -386,7 +379,7 @@ fn generic_test_linearizability(
     } else {
         title += "one client";
     }
-    title = format!("{}, linearizability checks ({})", title, part); // 3A or 3B
+    title = format!("{}, linearizability checks ({})", title, part); // 3A 或 3B
 
     let cfg = Arc::new(Config::new(nservers, unreliable, maxraftstate));
 
@@ -420,7 +413,7 @@ fn generic_test_linearizability(
                 let done_clients1 = done_clients_.clone();
                 let operations1 = operations_.clone();
                 move |cli, myck| {
-                    // TODO: change the closure to a future.
+                    // TODO: 将闭包改为 future
                     let mut j = 0;
                     let mut rng = rand::thread_rng();
                     while done_clients1.load(Ordering::Relaxed) == 0 {
@@ -481,7 +474,7 @@ fn generic_test_linearizability(
             }));
 
         if partitions {
-            // Allow the clients to perform some operations without interruption
+            // 允许客户端在无干扰的情况下执行一些操作
             thread::sleep(Duration::from_secs(1));
             cfg.net.spawn_poller(partitioner(
                 cfg.clone(),
@@ -491,20 +484,18 @@ fn generic_test_linearizability(
         }
         thread::sleep(Duration::from_secs(5));
 
-        // tell clients to quit
+        // 通知客户端退出
         done_clients.store(1, Ordering::Relaxed);
-        // tell partitioner to quit
+        // 通知分区器退出
         done_partitioner.store(1, Ordering::Relaxed);
 
         if partitions {
             debug!("wait for partitioner");
             partitioner_rx.recv().unwrap();
-            // reconnect network and submit a request. A client may
-            // have submitted a request in a minority.  That request
-            // won't return until that server discovers a new term
-            // has started.
+            // 重新连接网络并提交请求。客户端可能在少数派中提交了请求，
+            // 该请求直到服务器发现新任期开始才会返回
             cfg.connect_all();
-            // wait for a while so that we have a new term
+            // 等待一段时间以确保新任期开始
             thread::sleep(RAFT_ELECTION_TIMEOUT);
         }
 
@@ -513,25 +504,23 @@ fn generic_test_linearizability(
             for i in 0..nservers {
                 cfg.shutdown_server(i)
             }
-            // Wait for a while for servers to shutdown, since
-            // shutdown isn't a real crash and isn't instantaneous
+            // 等待一段时间让服务器关闭，因为 shutdown 不是真正的崩溃，也不是瞬时的
             thread::sleep(RAFT_ELECTION_TIMEOUT);
             debug!("restart servers");
-            // crash and re-start all
+            // 崩溃并重启所有服务器
             for i in 0..nservers {
                 cfg.start_server(i);
             }
             cfg.connect_all();
         }
 
-        // wait for clients.
+        // 等待客户端
         for clnt_rx in &clnt_rxs {
             clnt_rx.recv().unwrap();
         }
 
         if let Some(maxraftstate) = maxraftstate {
-            // Check maximum after the servers have processed all client
-            // requests and had time to checkpoint.
+            // 在所有服务器处理完客户端请求并有时间进行快照后检查最大值
             if cfg.log_size() > 2 * maxraftstate {
                 panic!(
                     "logs were not trimmed ({} > 2*{})",
@@ -556,19 +545,19 @@ fn generic_test_linearizability(
 
 #[test]
 fn test_basic_3a() {
-    // Test: one client (3A) ...
+    // 测试：一个客户端 (3A) ...
     generic_test("3A", 1, false, false, false, None)
 }
 
 #[test]
 fn test_concurrent_3a() {
-    // Test: many clients (3A) ...
+    // 测试：多个客户端 (3A) ...
     generic_test("3A", 5, false, false, false, None)
 }
 
 #[test]
 fn test_unreliable_3a() {
-    // Test: unreliable net, many clients (3A) ...
+    // 测试：不可靠网络，多个客户端 (3A) ...
     generic_test("3A", 5, true, false, false, None)
 }
 
@@ -610,9 +599,8 @@ fn test_unreliable_one_key_3a() {
     cfg.end();
 }
 
-// Submit a request in the minority partition and check that the requests
-// doesn't go through until the partition heals. The leader in the original
-// network ends up in the minority partition.
+// 在少数派分区中提交请求，并检查请求是否在分区恢复前未通过。
+// 原始网络中的 leader 最终处于少数派分区。
 #[test]
 fn test_one_partition_3a() {
     let nservers = 5;
@@ -628,12 +616,12 @@ fn test_one_partition_3a() {
     let (p1, p2) = cfg.make_partition();
     cfg.partition(&p1, &p2);
 
-    // connect ckp1 to p1
+    // 将 ckp1 连接到 p1
     let ckp1 = cfg.make_client(&p1);
-    // connect ckp2a to p2
+    // 将 ckp2a 连接到 p2
     let ckp2a = cfg.make_client(&p2);
     let ckp2a_name = ckp2a.name.clone();
-    // connect ckp2b to p2
+    // 将 ckp2b 连接到 p2
     let ckp2b = cfg.make_client(&p2);
     let ckp2b_name = ckp2b.name.clone();
 
@@ -661,7 +649,7 @@ fn test_one_partition_3a() {
     });
 
     cfg.net.spawn(future::lazy(move |_| {
-        // different clerk in p2
+        // p2 中的不同客户端
         ckp2b.get("1".to_owned());
         done1_tx
             .send("get")
@@ -736,56 +724,54 @@ fn test_one_partition_3a() {
 
 #[test]
 fn test_many_partitions_one_client_3a() {
-    // Test: partitions, one client (3A) ...
+    // 测试：分区，一个客户端 (3A) ...
     generic_test("3A", 1, false, false, true, None)
 }
 
 #[test]
 fn test_many_partitions_many_clients_3a() {
-    // Test: partitions, many clients (3A) ...
+    // 测试：分区，多个客户端 (3A) ...
     generic_test("3A", 5, false, false, true, None)
 }
 
 #[test]
 fn test_persist_one_client_3a() {
-    // Test: restarts, one client (3A) ...
+    // 测试：重启，一个客户端 (3A) ...
     generic_test("3A", 1, false, true, false, None)
 }
 
 #[test]
 fn test_persist_concurrent_3a() {
-    // Test: restarts, many clients (3A) ...
+    // 测试：重启，多个客户端 (3A) ...
     generic_test("3A", 5, false, true, false, None)
 }
 
 #[test]
 fn test_persist_concurrent_unreliable_3a() {
-    // Test: unreliable net, restarts, many clients (3A) ...
+    // 测试：不可靠网络，重启，多个客户端 (3A) ...
     generic_test("3A", 5, true, true, false, None)
 }
 
 #[test]
 fn test_persist_partition_3a() {
-    // Test: restarts, partitions, many clients (3A) ...
+    // 测试：重启，分区，多个客户端 (3A) ...
     generic_test("3A", 5, false, true, true, None)
 }
 
 #[test]
 fn test_persist_partition_unreliable_3a() {
-    // Test: unreliable net, restarts, partitions, many clients (3A) ...
+    // 测试：不可靠网络，重启，分区，多个客户端 (3A) ...
     generic_test("3A", 5, true, true, true, None)
 }
 
 #[test]
 fn test_persist_partition_unreliable_linearizable_3a() {
-    // Test: unreliable net, restarts, partitions, linearizability checks (3A) ...
+    // 测试：不可靠网络，重启，分区，线性一致性检查 (3A) ...
     generic_test_linearizability("3A", 15, 7, true, true, true, None)
 }
 
-// if one server falls behind, then rejoins, does it
-// recover by using the InstallSnapshot RPC?
-// also checks that majority discards committed log entries
-// even if minority doesn't respond.
+// 如果一个服务器落后，然后重新加入，它是否通过 InstallSnapshot RPC 恢复？
+// 同时检查多数派是否丢弃已提交的日志条目，即使少数派没有响应。
 #[test]
 fn test_snapshot_rpc_3b() {
     let nservers = 3;
@@ -800,7 +786,7 @@ fn test_snapshot_rpc_3b() {
     put(&cfg, &ck, "a", "A");
     check(&cfg, &ck, "a", "A");
 
-    // a bunch of puts into the majority partition.
+    // 向多数派分区发送大量 put 操作
     cfg.partition(&[0, 1], &[2]);
     {
         let ck1 = cfg.make_client(&[0, 1]);
@@ -811,8 +797,7 @@ fn test_snapshot_rpc_3b() {
         put(&cfg, &ck1, "b", "B");
     }
 
-    // check that the majority partition has thrown away
-    // most of its log entries.
+    // 检查多数派分区是否丢弃了大部分日志条目
     if cfg.log_size() > 2 * maxraftstate {
         panic!(
             "logs were not trimmed ({} > 2*{})",
@@ -821,8 +806,7 @@ fn test_snapshot_rpc_3b() {
         );
     }
 
-    // now make group that requires participation of
-    // lagging server, so that it has to catch up.
+    // 现在构造一个需要落后服务器参与的组，使其必须赶上
     cfg.partition(&[0, 2], &[1]);
     {
         let ck1 = cfg.make_client(&[0, 2]);
@@ -834,7 +818,7 @@ fn test_snapshot_rpc_3b() {
         check(&cfg, &ck1, "49", "49");
     }
 
-    // now everybody
+    // 现在所有人
     cfg.partition(&[0, 1, 2], &[]);
 
     put(&cfg, &ck, "e", "E");
@@ -846,8 +830,7 @@ fn test_snapshot_rpc_3b() {
     cfg.end();
 }
 
-// are the snapshots not too huge? 500 bytes is a generous bound for the
-// operations we're doing here.
+// 快照是否不会太大？对于我们这里的操作，500 字节是一个宽松的上限
 #[test]
 fn test_snapshot_size_3b() {
     let nservers = 3;
@@ -867,7 +850,7 @@ fn test_snapshot_size_3b() {
         check(&cfg, &ck, "x", "1");
     }
 
-    // check that servers have thrown away most of their log entries
+    // 检查服务器是否丢弃了大部分日志条目
     if cfg.log_size() > 2 * maxraftstate {
         panic!(
             "logs were not trimmed ({} > 2*{})",
@@ -876,7 +859,7 @@ fn test_snapshot_size_3b() {
         )
     }
 
-    // check that the snapshots are not unreasonably large
+    // 检查快照是否不会过大
     if cfg.snapshot_size() > maxsnapshotstate {
         panic!(
             "snapshot too large ({} > {})",
@@ -891,36 +874,37 @@ fn test_snapshot_size_3b() {
 
 #[test]
 fn test_snapshot_recover_3b() {
-    // Test: restarts, snapshots, one client (3B) ...
+    // 测试：重启，快照，一个客户端 (3B) ...
     generic_test("3B", 1, false, true, false, Some(1000))
 }
 
 #[test]
 fn test_snapshot_recover_many_clients_3b() {
-    // Test: restarts, snapshots, many clients (3B) ...
+    // 测试：重启，快照，多个客户端 (3B) ...
     generic_test("3B", 20, false, true, false, Some(1000))
 }
 
 #[test]
 fn test_snapshot_unreliable_3b() {
-    // Test: unreliable net, snapshots, many clients (3B) ...
+    // 测试：不可靠网络，快照，多个客户端 (3B) ...
     generic_test("3B", 5, true, false, false, Some(1000))
 }
 
 #[test]
 fn test_snapshot_unreliable_recover_3b() {
-    // Test: unreliable net, restarts, snapshots, many clients (3B) ...
+    // 测试：不可靠网络，重启，快照，多个客户端 (3B) ...
     generic_test("3B", 5, true, true, false, Some(1000))
 }
 
 #[test]
 fn test_snapshot_unreliable_recover_concurrent_partition_3b() {
-    // Test: unreliable net, restarts, partitions, snapshots, many clients (3B) ...
+    // 测试：不可靠网络，重启，分区，快照，多个客户端 (3B) ...
     generic_test("3B", 5, true, true, true, Some(1000))
 }
 
 #[test]
 fn test_snapshot_unreliable_recover_concurrent_partition_linearizable_3b() {
-    // Test: unreliable net, restarts, partitions, snapshots, linearizability checks (3B) ...
+    // 测试：不可靠网络，重启，分区，快照，线性一致性检查 (3B) ...
     generic_test_linearizability("3B", 15, 7, true, true, true, Some(1000))
 }
+```

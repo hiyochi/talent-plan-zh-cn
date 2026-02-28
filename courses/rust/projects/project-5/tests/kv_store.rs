@@ -1,3 +1,4 @@
+```rust
 use kvs::thread_pool::RayonThreadPool;
 use kvs::{KvStore, KvsEngine, KvsError, Result};
 use tempfile::TempDir;
@@ -5,7 +6,7 @@ use tokio::prelude::*;
 use tokio::runtime::Runtime;
 use walkdir::WalkDir;
 
-// Should get previously stored value
+// 应该获取之前存储的值
 #[test]
 fn get_stored_value() -> Result<()> {
     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
@@ -23,7 +24,7 @@ fn get_stored_value() -> Result<()> {
         Some("value2".to_owned())
     );
 
-    // Open from disk again and check persistent data
+    // 从磁盘重新打开并检查持久化数据
     drop(store);
     let store = KvStore::<RayonThreadPool>::open(temp_dir.path(), 1)?;
     assert_eq!(
@@ -38,7 +39,7 @@ fn get_stored_value() -> Result<()> {
     Ok(())
 }
 
-// Should overwrite existent value
+// 应该覆盖已存在的值
 #[test]
 fn overwrite_value() -> Result<()> {
     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
@@ -55,7 +56,7 @@ fn overwrite_value() -> Result<()> {
         Some("value2".to_owned())
     );
 
-    // Open from disk again and check persistent data
+    // 从磁盘重新打开并检查持久化数据
     drop(store);
     let store = KvStore::<RayonThreadPool>::open(temp_dir.path(), 1)?;
     assert_eq!(
@@ -71,7 +72,7 @@ fn overwrite_value() -> Result<()> {
     Ok(())
 }
 
-// Should get `None` when getting a non-existent key
+// 当获取不存在的键时，应返回 `None`
 #[test]
 fn get_non_existent_value() -> Result<()> {
     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
@@ -80,7 +81,7 @@ fn get_non_existent_value() -> Result<()> {
     store.set("key1".to_owned(), "value1".to_owned()).wait()?;
     assert_eq!(store.get("key2".to_owned()).wait()?, None);
 
-    // Open from disk again and check persistent data
+    // 从磁盘重新打开并检查持久化数据
     drop(store);
     let store = KvStore::<RayonThreadPool>::open(temp_dir.path(), 1)?;
     assert_eq!(store.get("key2".to_owned()).wait()?, None);
@@ -106,8 +107,8 @@ fn remove_key() -> Result<()> {
     Ok(())
 }
 
-// Insert data until total size of the directory decreases.
-// Test data correctness after compaction.
+// 插入数据直到目录总大小减小。
+// 测试压缩后数据的正确性。
 #[test]
 fn compaction() -> Result<()> {
     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
@@ -137,10 +138,10 @@ fn compaction() -> Result<()> {
             current_size = new_size;
             continue;
         }
-        // Compaction triggered
+        // 触发压缩
 
         drop(store);
-        // reopen and check content
+        // 重新打开并检查内容
         let store = KvStore::<RayonThreadPool>::open(temp_dir.path(), 1)?;
         for key_id in 0..1000 {
             let key = format!("key{}", key_id);
@@ -156,7 +157,7 @@ fn compaction() -> Result<()> {
 fn concurrent_set() -> Result<()> {
     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
 
-    // concurrent set in 8 threads
+    // 在8个线程中并发设置
     let store = KvStore::<RayonThreadPool>::open(temp_dir.path(), 8)?;
     let runtime = Runtime::new()?;
     let executor = runtime.executor();
@@ -171,7 +172,7 @@ fn concurrent_set() -> Result<()> {
         future::ok::<(), KvsError>(())
     }))?;
 
-    // We only check concurrent set in this test, so we check sequentially here
+    // 本测试仅检查并发设置，因此此处顺序检查
     let store = KvStore::<RayonThreadPool>::open(temp_dir.path(), 1)?;
     for i in 0..10000 {
         assert_eq!(
@@ -187,7 +188,7 @@ fn concurrent_set() -> Result<()> {
 fn concurrent_get() -> Result<()> {
     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
     let store = KvStore::<RayonThreadPool>::open(temp_dir.path(), 8)?;
-    // We only check concurrent get in this test, so we set sequentially here
+    // 本测试仅检查并发获取，因此此处顺序设置
     for i in 0..100 {
         store
             .set(format!("key{}", i), format!("value{}", i))
@@ -214,7 +215,7 @@ fn concurrent_get() -> Result<()> {
         future::ok::<(), KvsError>(())
     }))?;
 
-    // reload from disk and test again
+    // 从磁盘重新加载并再次测试
     let store = KvStore::<RayonThreadPool>::open(temp_dir.path(), 8)?;
     let runtime = Runtime::new()?;
     let executor = runtime.executor();
@@ -237,3 +238,4 @@ fn concurrent_get() -> Result<()> {
 
     Ok(())
 }
+```

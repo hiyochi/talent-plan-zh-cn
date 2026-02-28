@@ -1,49 +1,27 @@
-# PNA Rust &mdash; Building Blocks 3
+# PNA Rust — 构建模块 3
 
-Let's learn some building blocks!
+让我们学习一些构建模块！
 
-Put your other projects and concerns aside. Take a breath and relax. Here
-are some fun resources for you to explore.
+把其他项目和杂务放在一边，深呼吸，放松一下。这里有一些有趣的资源供你探索。
 
-Read all the readings and perform all the exercises.
+请阅读所有材料并完成所有练习。
 
-- **[Reading: `log` crate API][l]**. The original Rust logging crate. Just read
-  the crate-level documentation (the front page). You may need to click little `[+]`
-  or `[-]` buttons to make the crate docs visible. This will give you an idea
-  about how logging works in Rust.
+- **[阅读：`log` crate API][l]**。Rust 原生的日志库。只需阅读 crate 级别的文档（首页）。你可能需要点击小的 `[+]` 或 `[-]` 按钮来展开文档内容。这将帮助你了解 Rust 中日志的工作方式。
 
-- **[Reading: `slog` crate API][sl]**. Another popular logging crate, designed
-  for "structured logging". Again, just read the crate-level docs, to compare to
-  `log`. You might also want to look at ["Introduction to structured logging
-  with slog"][sli].
+- **[阅读：`slog` crate API][sl]**。另一个流行的日志库，专为“结构化日志”设计。同样，只需阅读 crate 级别的文档，与 `log` 进行对比。你也可以查看 ["使用 slog 进行结构化日志的入门"][sli]。
 
-- **[Reading: Benefits of Structured Logging vs basic logging][lvsl]**. A
-  StackOverflow discussion about the differences between traditional,
-  text-oriented, line logging and structured logging.
+- **[阅读：结构化日志 vs 基础日志的优势][lvsl]**。一篇关于传统文本行日志与结构化日志之间差异的 StackOverflow 讨论。
 
-- **[Reading: Redis Protocol specification][rp]**. The protocol spec for
-  [Redis], an in-memory key-value store. Think about what their design
-  priorities were. When reading this it also helps to have the Redis [commands]
-  on hand.
+- **[阅读：Redis 协议规范][rp]**。[Redis]（一个内存键值存储）的协议规范。思考他们的设计优先级是什么。阅读时，最好同时参考 Redis 的 [命令列表]。
 
-- **Exercise: Write a Redis ping-pong client and server using `std::io`**. Write
-  a simple client and server that speaks the Redis protocol, with the client
-  issuing [PING] commands and the server responding appropriately. Use the
-  [`std::io`] APIs to read and write bytes directly. Does your client work with
-  an actual Redis server?
+- **练习：使用 `std::io` 编写一个 Redis ping-pong 客户端和服务器**。编写一个简单的客户端和服务器，使用 Redis 协议通信：客户端发送 [PING] 命令，服务器做出正确响应。使用 [`std::io`] API 直接读写字节。你的客户端能否与真实的 Redis 服务器通信？
 
-- **Exercise: Write a Redis ping-pong client and server with serialized
-  messages**. Same as above, but this time define the protocol with types and
-  write a [`serde` data format][df] to indirectly read and write messages
-  through serialization.
+- **练习：使用序列化消息编写一个 Redis ping-pong 客户端和服务器**。与上一练习相同，但这次使用类型定义协议，并编写一个 [`serde` 数据格式][df]，通过序列化间接读写消息。
 
-- **[Reading: Statistically Rigorous Java Performance Evaluation][pe]**.
-  Although it is specifically about Java, and discusses topics relevant to
-  garbage-collected languages, it is a good example of the kind of thinking
-  necessary to create effective benchmarks.
+- **[阅读：统计严谨的 Java 性能评估][pe]**。虽然该文专门针对 Java，并讨论了与垃圾回收语言相关的话题，但它很好地展示了如何构建有效基准测试所需的思维方式。
 
-<!-- TODO: better benchmarking reading -->
-<!-- TODO: something about traits? -->
+<!-- TODO: 更好的基准测试阅读材料 -->
+<!-- TODO: 关于 trait 的内容？ -->
 
 [pe]: https://dri.es/files/oopsla07-georges.pdf
 [df]: https://serde.rs/data-format.html

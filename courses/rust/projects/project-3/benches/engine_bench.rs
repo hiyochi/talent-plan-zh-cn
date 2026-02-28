@@ -4,6 +4,7 @@ use rand::prelude::*;
 use sled;
 use tempfile::TempDir;
 
+// 基准测试设置操作的性能
 fn set_bench(c: &mut Criterion) {
     let mut group = c.benchmark_group("set_bench");
     group.bench_function("kvs", |b| {
@@ -37,6 +38,7 @@ fn set_bench(c: &mut Criterion) {
     group.finish();
 }
 
+// 基准测试获取操作的性能，针对不同数据规模（2^8 到 2^20）
 fn get_bench(c: &mut Criterion) {
     let mut group = c.benchmark_group("get_bench");
     for i in &vec![8, 12, 16, 20] {

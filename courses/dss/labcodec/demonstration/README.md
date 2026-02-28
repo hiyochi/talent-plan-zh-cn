@@ -1,4 +1,3 @@
-# Demonstration
+# 演示
 
-Expanded version of generated rust files. Files in the folder are for the sake
-of understanding how procedural macro works, and they are not compilable.
+生成的 Rust 文件的扩展版本。文件夹中的文件仅用于理解过程宏的工作原理，这些文件不可编译。

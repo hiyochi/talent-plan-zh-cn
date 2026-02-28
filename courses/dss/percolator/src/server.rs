@@ -1,3 +1,4 @@
+```rust
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -6,26 +7,26 @@ use crate::msg::*;
 use crate::service::*;
 use crate::*;
 
-// TTL is used for a lock key.
-// If the key's lifetime exceeds this value, it should be cleaned up.
-// Otherwise, the operation should back off.
+// TTL 用于锁键。
+// 如果键的生命周期超过此值，则应进行清理。
+// 否则，操作应退避。
 const TTL: u64 = Duration::from_millis(100).as_nanos() as u64;
 
 #[derive(Clone, Default)]
 pub struct TimestampOracle {
-    // You definitions here if needed.
+    // 如果需要，你可以在这里添加定义。
 }
 
 #[async_trait::async_trait]
 impl timestamp::Service for TimestampOracle {
-    // example get_timestamp RPC handler.
+    // 示例 get_timestamp RPC 处理程序。
     async fn get_timestamp(&self, _: TimestampRequest) -> labrpc::Result<TimestampResponse> {
-        // Your code here.
+        // 你的代码写在这里。
         unimplemented!()
     }
 }
 
-// Key is a tuple (raw key, timestamp).
+// 键是一个元组 (原始键, 时间戳)。
 pub type Key = (Vec<u8>, u64);
 
 #[derive(Clone, PartialEq)]
@@ -43,8 +44,8 @@ pub enum Column {
     Lock,
 }
 
-// KvTable is used to simulate Google's Bigtable.
-// It provides three columns: Write, Data, and Lock.
+// KvTable 用于模拟 Google 的 Bigtable。
+// 它提供三列：Write、Data 和 Lock。
 #[derive(Clone, Default)]
 pub struct KvTable {
     write: BTreeMap<Key, Value>,
@@ -53,8 +54,7 @@ pub struct KvTable {
 }
 
 impl KvTable {
-    // Reads the latest key-value record from a specified column
-    // in MemoryStorage with a given key and a timestamp range.
+    // 从 MemoryStorage 的指定列中读取给定键和时间戳范围内的最新键值记录。
     #[inline]
     fn read(
         &self,
@@ -63,27 +63,27 @@ impl KvTable {
         ts_start_inclusive: Option<u64>,
         ts_end_inclusive: Option<u64>,
     ) -> Option<(&Key, &Value)> {
-        // Your code here.
+        // 你的代码写在这里。
         unimplemented!()
     }
 
-    // Writes a record to a specified column in MemoryStorage.
+    // 将记录写入 MemoryStorage 的指定列。
     #[inline]
     fn write(&mut self, key: Vec<u8>, column: Column, ts: u64, value: Value) {
-        // Your code here.
+        // 你的代码写在这里。
         unimplemented!()
     }
 
     #[inline]
-    // Erases a record from a specified column in MemoryStorage.
+    // 从 MemoryStorage 的指定列中擦除记录。
     fn erase(&mut self, key: Vec<u8>, column: Column, commit_ts: u64) {
-        // Your code here.
+        // 你的代码写在这里。
         unimplemented!()
     }
 }
 
-// MemoryStorage is used to wrap a KvTable.
-// You may need to get a snapshot from it.
+// MemoryStorage 用于包装 KvTable。
+// 你可能需要从中获取快照。
 #[derive(Clone, Default)]
 pub struct MemoryStorage {
     data: Arc<Mutex<KvTable>>,
@@ -91,28 +91,29 @@ pub struct MemoryStorage {
 
 #[async_trait::async_trait]
 impl transaction::Service for MemoryStorage {
-    // example get RPC handler.
+    // 示例 get RPC 处理程序。
     async fn get(&self, req: GetRequest) -> labrpc::Result<GetResponse> {
-        // Your code here.
+        // 你的代码写在这里。
         unimplemented!()
     }
 
-    // example prewrite RPC handler.
+    // 示例 prewrite RPC 处理程序。
     async fn prewrite(&self, req: PrewriteRequest) -> labrpc::Result<PrewriteResponse> {
-        // Your code here.
+        // 你的代码写在这里。
         unimplemented!()
     }
 
-    // example commit RPC handler.
+    // 示例 commit RPC 处理程序。
     async fn commit(&self, req: CommitRequest) -> labrpc::Result<CommitResponse> {
-        // Your code here.
+        // 你的代码写在这里。
         unimplemented!()
     }
 }
 
 impl MemoryStorage {
     fn back_off_maybe_clean_up_lock(&self, start_ts: u64, key: Vec<u8>) {
-        // Your code here.
+        // 你的代码写在这里。
         unimplemented!()
     }
 }
+```

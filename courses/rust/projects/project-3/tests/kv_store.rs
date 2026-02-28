@@ -2,7 +2,7 @@ use kvs::{KvStore, KvsEngine, Result};
 use tempfile::TempDir;
 use walkdir::WalkDir;
 
-// Should get previously stored value
+// 应该获取之前存储的值
 #[test]
 fn get_stored_value() -> Result<()> {
     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
@@ -14,7 +14,7 @@ fn get_stored_value() -> Result<()> {
     assert_eq!(store.get("key1".to_owned())?, Some("value1".to_owned()));
     assert_eq!(store.get("key2".to_owned())?, Some("value2".to_owned()));
 
-    // Open from disk again and check persistent data
+    // 从磁盘重新打开并检查持久化数据
     drop(store);
     let mut store = KvStore::open(temp_dir.path())?;
     assert_eq!(store.get("key1".to_owned())?, Some("value1".to_owned()));
@@ -23,7 +23,7 @@ fn get_stored_value() -> Result<()> {
     Ok(())
 }
 
-// Should overwrite existent value
+// 应该覆盖已存在的值
 #[test]
 fn overwrite_value() -> Result<()> {
     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
@@ -34,7 +34,7 @@ fn overwrite_value() -> Result<()> {
     store.set("key1".to_owned(), "value2".to_owned())?;
     assert_eq!(store.get("key1".to_owned())?, Some("value2".to_owned()));
 
-    // Open from disk again and check persistent data
+    // 从磁盘重新打开并检查持久化数据
     drop(store);
     let mut store = KvStore::open(temp_dir.path())?;
     assert_eq!(store.get("key1".to_owned())?, Some("value2".to_owned()));
@@ -44,7 +44,7 @@ fn overwrite_value() -> Result<()> {
     Ok(())
 }
 
-// Should get `None` when getting a non-existent key
+// 当获取不存在的键时，应返回 `None`
 #[test]
 fn get_non_existent_value() -> Result<()> {
     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
@@ -53,7 +53,7 @@ fn get_non_existent_value() -> Result<()> {
     store.set("key1".to_owned(), "value1".to_owned())?;
     assert_eq!(store.get("key2".to_owned())?, None);
 
-    // Open from disk again and check persistent data
+    // 从磁盘重新打开并检查持久化数据
     drop(store);
     let mut store = KvStore::open(temp_dir.path())?;
     assert_eq!(store.get("key2".to_owned())?, None);
@@ -79,8 +79,8 @@ fn remove_key() -> Result<()> {
     Ok(())
 }
 
-// Insert data until total size of the directory decreases.
-// Test data correctness after compaction.
+// 插入数据，直到目录总大小减小。
+// 测试压缩后数据的正确性。
 #[test]
 fn compaction() -> Result<()> {
     let temp_dir = TempDir::new().expect("unable to create temporary working directory");
@@ -110,10 +110,10 @@ fn compaction() -> Result<()> {
             current_size = new_size;
             continue;
         }
-        // Compaction triggered
+        // 触发压缩
 
         drop(store);
-        // reopen and check content
+        // 重新打开并检查内容
         let mut store = KvStore::open(temp_dir.path())?;
         for key_id in 0..1000 {
             let key = format!("key{}", key_id);

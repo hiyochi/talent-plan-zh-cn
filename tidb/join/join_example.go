@@ -10,7 +10,7 @@ import (
 	"github.com/pingcap/tidb/util/mvmap"
 )
 
-// JoinExample performs a simple hash join algorithm.
+// JoinExample 执行一个简单的哈希连接算法。
 func JoinExample(f0, f1 string, offset0, offset1 []int) (sum uint64) {
 	tbl0, tbl1 := readCSVFileIntoTbl(f0), readCSVFileIntoTbl(f1)
 	hashtable := buildHashTable(tbl0, offset0)
@@ -27,6 +27,7 @@ func JoinExample(f0, f1 string, offset0, offset1 []int) (sum uint64) {
 	return sum
 }
 
+// readCSVFileIntoTbl 将CSV文件读取到表中。
 func readCSVFileIntoTbl(f string) (tbl [][]string) {
 	csvFile, err := os.Open(f)
 	if err != nil {
@@ -47,6 +48,7 @@ func readCSVFileIntoTbl(f string) (tbl [][]string) {
 	return tbl
 }
 
+// buildHashTable 构建哈希表。
 func buildHashTable(data [][]string, offset []int) (hashtable *mvmap.MVMap) {
 	var keyBuffer []byte
 	valBuffer := make([]byte, 8)
@@ -65,6 +67,7 @@ func buildHashTable(data [][]string, offset []int) (hashtable *mvmap.MVMap) {
 	return
 }
 
+// probe 探测哈希表。
 func probe(hashtable *mvmap.MVMap, row []string, offset []int) (rowIDs []int64) {
 	var keyHash []byte
 	var vals [][]byte

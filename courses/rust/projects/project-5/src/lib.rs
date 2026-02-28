@@ -1,5 +1,5 @@
 #![deny(missing_docs)]
-//! A simple key/value store.
+//! 一个简单的键值存储系统。
 
 #[macro_use]
 extern crate log;

@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
-/// The `KvStore` stores string key/value pairs.
+/// `KvStore` 存储字符串键值对。
 ///
-/// Key/value pairs are stored in a `HashMap` in memory and not persisted to disk.
+/// 键值对存储在内存中的 `HashMap` 中，不会持久化到磁盘。
 ///
-/// Example:
+/// 示例：
 ///
 /// ```rust
 /// # use kvs::KvStore;
@@ -19,28 +19,28 @@ pub struct KvStore {
 }
 
 impl KvStore {
-    /// Creates a `KvStore`.
+    /// 创建一个 `KvStore`。
     pub fn new() -> KvStore {
         KvStore {
             map: HashMap::new(),
         }
     }
 
-    /// Sets the value of a string key to a string.
+    /// 将字符串键的值设置为另一个字符串。
     ///
-    /// If the key already exists, the previous value will be overwritten.
+    /// 如果键已存在，则会覆盖之前的值。
     pub fn set(&mut self, key: String, value: String) {
         self.map.insert(key, value);
     }
 
-    /// Gets the string value of a given string key.
+    /// 获取指定字符串键的字符串值。
     ///
-    /// Returns `None` if the given key does not exist.
+    /// 如果给定的键不存在，则返回 `None`。
     pub fn get(&self, key: String) -> Option<String> {
         self.map.get(&key).cloned()
     }
 
-    /// Remove a given key.
+    /// 删除指定的键。
     pub fn remove(&mut self, key: String) {
         self.map.remove(&key);
     }

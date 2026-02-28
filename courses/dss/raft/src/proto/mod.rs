@@ -5,7 +5,7 @@ pub mod raftpb {
         service raft {
             rpc request_vote(RequestVoteArgs) returns (RequestVoteReply);
 
-            // Your code here if more rpc desired.
+            // 如果需要更多 RPC，请在此处添加代码。
             // rpc xxx(yyy) returns (zzz)
         }
     }
@@ -22,7 +22,7 @@ pub mod kvraftpb {
             rpc get(GetRequest) returns (GetReply);
             rpc put_append(PutAppendRequest) returns (PutAppendReply);
 
-            // Your code here if more rpc desired.
+            // 如果需要更多 RPC，请在此处添加代码。
             // rpc xxx(yyy) returns (zzz)
         }
     }

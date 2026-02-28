@@ -1,3 +1,4 @@
+```rust
 use std::sync::mpsc::{sync_channel, Receiver};
 use std::sync::Arc;
 
@@ -14,15 +15,15 @@ use self::errors::*;
 use self::persister::*;
 use crate::proto::raftpb::*;
 
-/// As each Raft peer becomes aware that successive log entries are committed,
-/// the peer should send an `ApplyMsg` to the service (or tester) on the same
-/// server, via the `apply_ch` passed to `Raft::new`.
+/// 当每个 Raft 节点意识到连续的日志条目已被提交时，
+/// 该节点应通过传递给 `Raft::new` 的 `apply_ch` 通道，
+/// 向同一服务器上的服务（或测试器）发送一个 `ApplyMsg`。
 pub enum ApplyMsg {
     Command {
         data: Vec<u8>,
         index: u64,
     },
-    // For 2D:
+    // 用于 2D 实验：
     Snapshot {
         data: Vec<u8>,
         term: u64,
@@ -30,7 +31,7 @@ pub enum ApplyMsg {
     },
 }
 
-/// State of a raft peer.
+/// Raft 节点的状态。
 #[derive(Default, Clone, Debug)]
 pub struct State {
     pub term: u64,
@@ -38,39 +39,38 @@ pub struct State {
 }
 
 impl State {
-    /// The current term of this peer.
+    /// 获取该节点当前的任期（term）。
     pub fn term(&self) -> u64 {
         self.term
     }
-    /// Whether this peer believes it is the leader.
+    /// 判断该节点是否认为自己是领导者。
     pub fn is_leader(&self) -> bool {
         self.is_leader
     }
 }
 
-// A single Raft peer.
+// 一个 Raft 节点。
 pub struct Raft {
-    // RPC end points of all peers
+    // 所有节点的 RPC 端点
     peers: Vec<RaftClient>,
-    // Object to hold this peer's persisted state
+    // 用于保存该节点持久化状态的对象
     persister: Box<dyn Persister>,
-    // this peer's index into peers[]
+    // 该节点在 peers[] 中的索引
     me: usize,
     state: Arc<State>,
-    // Your data here (2A, 2B, 2C).
-    // Look at the paper's Figure 2 for a description of what
-    // state a Raft server must maintain.
+    // 你的数据写在这里（2A, 2B, 2C）。
+    // 请参考论文的 Figure 2，了解 Raft 服务器必须维护哪些状态。
 }
 
 impl Raft {
-    /// the service or tester wants to create a Raft server. the ports
-    /// of all the Raft servers (including this one) are in peers. this
-    /// server's port is peers[me]. all the servers' peers arrays
-    /// have the same order. persister is a place for this server to
-    /// save its persistent state, and also initially holds the most
-    /// recent saved state, if any. apply_ch is a channel on which the
-    /// tester or service expects Raft to send ApplyMsg messages.
-    /// This method must return quickly.
+    /// 服务或测试器希望创建一个 Raft 服务器。
+    /// 所有 Raft 服务器（包括当前服务器）的端口信息存储在 peers 中。
+    /// 当前服务器的端口是 peers[me]。
+    /// 所有服务器的 peers 数组顺序一致。
+    /// persister 是该服务器保存其持久化状态的地方，
+    /// 同时也初始保存最近一次保存的状态（如果有的话）。
+    /// apply_ch 是一个通道，测试器或服务期望 Raft 通过该通道发送 ApplyMsg 消息。
+    /// 此方法必须快速返回。
     pub fn new(
         peers: Vec<RaftClient>,
         me: usize,
@@ -79,7 +79,7 @@ impl Raft {
     ) -> Raft {
         let raft_state = persister.raft_state();
 
-        // Your initialization code here (2A, 2B, 2C).
+        // 你的初始化代码写在这里（2A, 2B, 2C）。
         let mut rf = Raft {
             peers,
             persister,
@@ -87,30 +87,30 @@ impl Raft {
             state: Arc::default(),
         };
 
-        // initialize from state persisted before a crash
+        // 从崩溃前持久化的状态中初始化
         rf.restore(&raft_state);
 
         crate::your_code_here((rf, apply_ch))
     }
 
-    /// save Raft's persistent state to stable storage,
-    /// where it can later be retrieved after a crash and restart.
-    /// see paper's Figure 2 for a description of what should be persistent.
+    /// 将 Raft 的持久化状态保存到稳定存储中，
+    /// 以便在崩溃和重启后可以恢复。
+    /// 请参考论文的 Figure 2，了解哪些状态需要持久化。
     fn persist(&mut self) {
-        // Your code here (2C).
-        // Example:
+        // 你的代码写在这里（2C）。
+        // 示例：
         // labcodec::encode(&self.xxx, &mut data).unwrap();
         // labcodec::encode(&self.yyy, &mut data).unwrap();
         // self.persister.save_raft_state(data);
     }
 
-    /// restore previously persisted state.
+    /// 恢复之前持久化的状态。
     fn restore(&mut self, data: &[u8]) {
         if data.is_empty() {
-            // bootstrap without any state?
+            // 没有状态的情况下启动？
         }
-        // Your code here (2C).
-        // Example:
+        // 你的代码写在这里（2C）。
+        // 示例：
         // match labcodec::decode(data) {
         //     Ok(o) => {
         //         self.xxx = o.xxx;
@@ -122,30 +122,29 @@ impl Raft {
         // }
     }
 
-    /// example code to send a RequestVote RPC to a server.
-    /// server is the index of the target server in peers.
-    /// expects RPC arguments in args.
+    /// 示例代码：向某个服务器发送 RequestVote RPC。
+    /// server 是目标服务器在 peers 中的索引。
+    /// 期望 RPC 参数通过 args 传递。
     ///
-    /// The labrpc package simulates a lossy network, in which servers
-    /// may be unreachable, and in which requests and replies may be lost.
-    /// This method sends a request and waits for a reply. If a reply arrives
-    /// within a timeout interval, This method returns Ok(_); otherwise
-    /// this method returns Err(_). Thus this method may not return for a while.
-    /// An Err(_) return can be caused by a dead server, a live server that
-    /// can't be reached, a lost request, or a lost reply.
+    /// labrpc 包模拟了一个有损网络，其中服务器可能不可达，
+    /// 请求和响应可能会丢失。
+    /// 此方法发送请求并等待响应。如果在超时时间内收到响应，
+    /// 此方法返回 Ok(_)；否则返回 Err(_)。
+    /// 因此，此方法可能需要一段时间才能返回。
+    /// Err(_) 的返回可能由以下原因引起：服务器宕机、无法访问的存活服务器、
+    /// 请求丢失或响应丢失。
     ///
-    /// This method is guaranteed to return (perhaps after a delay) *except* if
-    /// the handler function on the server side does not return.  Thus there
-    /// is no need to implement your own timeouts around this method.
+    /// 此方法保证会返回（可能延迟），除非服务器端的处理函数未返回。
+    /// 因此，无需在此方法周围实现自己的超时机制。
     ///
-    /// look at the comments in ../labrpc/src/lib.rs for more details.
+    /// 更多细节请查看 ../labrpc/src/lib.rs 中的注释。
     fn send_request_vote(
         &self,
         server: usize,
         args: RequestVoteArgs,
     ) -> Receiver<Result<RequestVoteReply>> {
-        // Your code here if you want the rpc becomes async.
-        // Example:
+        // 如果你希望 RPC 变为异步，可以在这里添加代码。
+        // 示例：
         // ```
         // let peer = &self.peers[server];
         // let peer_clone = peer.clone();
@@ -169,7 +168,7 @@ impl Raft {
         let is_leader = true;
         let mut buf = vec![];
         labcodec::encode(command, &mut buf).map_err(Error::Encode)?;
-        // Your code here (2B).
+        // 你的代码写在这里（2B）。
 
         if is_leader {
             Ok((index, term))
@@ -184,18 +183,18 @@ impl Raft {
         last_included_index: u64,
         snapshot: &[u8],
     ) -> bool {
-        // Your code here (2D).
+        // 你的代码写在这里（2D）。
         crate::your_code_here((last_included_term, last_included_index, snapshot));
     }
 
     fn snapshot(&mut self, index: u64, snapshot: &[u8]) {
-        // Your code here (2D).
+        // 你的代码写在这里（2D）。
         crate::your_code_here((index, snapshot));
     }
 }
 
 impl Raft {
-    /// Only for suppressing deadcode warnings.
+    /// 仅用于抑制未使用代码的警告。
     #[doc(hidden)]
     pub fn __suppress_deadcode(&mut self) {
         let _ = self.start(&0);
@@ -210,71 +209,69 @@ impl Raft {
     }
 }
 
-// Choose concurrency paradigm.
+// 选择并发范式。
 //
-// You can either drive the raft state machine by the rpc framework,
+// 你可以通过 RPC 框架驱动 Raft 状态机，
 //
 // ```rust
 // struct Node { raft: Arc<Mutex<Raft>> }
 // ```
 //
-// or spawn a new thread runs the raft state machine and communicate via
-// a channel.
+// 或者启动一个新线程运行 Raft 状态机，并通过通道通信。
 //
 // ```rust
 // struct Node { sender: Sender<Msg> }
 // ```
 #[derive(Clone)]
 pub struct Node {
-    // Your code here.
+    // 你的代码写在这里。
 }
 
 impl Node {
-    /// Create a new raft service.
+    /// 创建一个新的 Raft 服务。
     pub fn new(raft: Raft) -> Node {
-        // Your code here.
+        // 你的代码写在这里。
         crate::your_code_here(raft)
     }
 
-    /// the service using Raft (e.g. a k/v server) wants to start
-    /// agreement on the next command to be appended to Raft's log. if this
-    /// server isn't the leader, returns [`Error::NotLeader`]. otherwise start
-    /// the agreement and return immediately. there is no guarantee that this
-    /// command will ever be committed to the Raft log, since the leader
-    /// may fail or lose an election. even if the Raft instance has been killed,
-    /// this function should return gracefully.
+    /// 使用 Raft 的服务（例如键值存储服务器）希望就下一个命令达成一致，
+    /// 并将其追加到 Raft 日志中。如果当前服务器不是领导者，
+    /// 则返回 [`Error::NotLeader`]。否则立即启动一致性协议并返回。
+    /// 不保证该命令最终会被提交到 Raft 日志中，
+    /// 因为领导者可能失败或输掉选举。
+    /// 即使 Raft 实例已被终止，此函数也应优雅地返回。
     ///
-    /// the first value of the tuple is the index that the command will appear
-    /// at if it's ever committed. the second is the current term.
+    /// 元组的第一个值是命令最终被提交时的索引位置，
+    /// 第二个值是当前任期。
     ///
-    /// This method must return without blocking on the raft.
+    /// 此方法不得阻塞 Raft。
     pub fn start<M>(&self, command: &M) -> Result<(u64, u64)>
     where
         M: labcodec::Message,
     {
-        // Your code here.
-        // Example:
+        // 你的代码写在这里。
+        // 示例：
         // self.raft.start(command)
         crate::your_code_here(command)
     }
 
-    /// The current term of this peer.
+    /// 获取该节点当前的任期。
     pub fn term(&self) -> u64 {
-        // Your code here.
-        // Example:
+        // 你的代码写在这里。
+        // 示例：
         // self.raft.term
         crate::your_code_here(())
     }
 
-    /// Whether this peer believes it is the leader.
+    /// 判断该节点是否认为自己是领导者。
     pub fn is_leader(&self) -> bool {
-        // Your code here.
-        // Example:
+        // 你的代码写在这里。
+        // 示例：
         // self.raft.leader_id == self.id
         crate::your_code_here(())
     }
 
-    /// The current state of this peer.
+    /// 获取该节点当前的状态。
     pub fn get_state(&self) -> State {
         State {
             term: self.term(),
@@ -282,41 +279,38 @@ impl Node {
         }
     }
 
-    /// the tester calls kill() when a Raft instance won't be
-    /// needed again. you are not required to do anything in
-    /// kill(), but it might be convenient to (for example)
-    /// turn off debug output from this instance.
-    /// In Raft paper, a server crash is a PHYSICAL crash,
-    /// A.K.A all resources are reset. But we are simulating
-    /// a VIRTUAL crash in tester, so take care of background
-    /// threads you generated with this Raft Node.
+    /// 测试器在不再需要 Raft 实例时调用 kill()。
+    /// 你不需要在 kill() 中做任何事情，但为了方便起见，
+    /// 可以（例如）关闭此实例的调试输出。
+    /// 在 Raft 论文中，服务器崩溃是物理崩溃，
+    /// 即所有资源都被重置。但在测试器中我们模拟的是虚拟崩溃，
+    /// 因此请注意清理由此 Raft 节点生成的后台线程。
     pub fn kill(&self) {
-        // Your code here, if desired.
+        // 如果需要，可以在这里添加代码。
     }
 
-    /// A service wants to switch to snapshot.  
+    /// 服务希望切换到快照。
     ///
-    /// Only do so if Raft hasn't have more recent info since it communicate
-    /// the snapshot on `apply_ch`.
+    /// 仅在 Raft 没有更新信息的情况下执行此操作，
+    /// 因为它已通过 `apply_ch` 通信了快照。
     pub fn cond_install_snapshot(
         &self,
         last_included_term: u64,
         last_included_index: u64,
         snapshot: &[u8],
     ) -> bool {
-        // Your code here.
-        // Example:
+        // 你的代码写在这里。
+        // 示例：
         // self.raft.cond_install_snapshot(last_included_term, last_included_index, snapshot)
         crate::your_code_here((last_included_term, last_included_index, snapshot));
     }
 
-    /// The service says it has created a snapshot that has all info up to and
-    /// including index. This means the service no longer needs the log through
-    /// (and including) that index. Raft should now trim its log as much as
-    /// possible.
+    /// 服务表示它已创建一个快照，其中包含截至并包括指定索引的所有信息。
+    /// 这意味着服务不再需要该索引（含）之前的日志。
+    /// Raft 现在应尽可能裁剪其日志。
     pub fn snapshot(&self, index: u64, snapshot: &[u8]) {
-        // Your code here.
-        // Example:
+        // 你的代码写在这里。
+        // 示例：
         // self.raft.snapshot(index, snapshot)
         crate::your_code_here((index, snapshot));
     }
@@ -324,11 +318,12 @@ impl Node {
 
 #[async_trait::async_trait]
 impl RaftService for Node {
-    // example RequestVote RPC handler.
+    // RequestVote RPC 处理器的示例。
     //
-    // CAVEATS: Please avoid locking or sleeping here, it may jam the network.
+    // 注意：请避免在此处加锁或休眠，否则可能会阻塞网络。
     async fn request_vote(&self, args: RequestVoteArgs) -> labrpc::Result<RequestVoteReply> {
-        // Your code here (2A, 2B).
+        // 你的代码写在这里（2A, 2B）。
         crate::your_code_here(args)
     }
 }
+```

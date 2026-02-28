@@ -7,14 +7,14 @@ use tokio::net::TcpStream;
 use tokio::prelude::*;
 use tokio_serde_json::{ReadJson, WriteJson};
 
-/// Key value store client
+/// 键值存储客户端
 pub struct KvsClient {
     read_json: ReadJson<FramedRead<ReadHalf<TcpStream>, LengthDelimitedCodec>, Response>,
     write_json: WriteJson<FramedWrite<WriteHalf<TcpStream>, LengthDelimitedCodec>, Request>,
 }
 
 impl KvsClient {
-    /// Connect to `addr` to access `KvsServer`.
+    /// 连接到 `addr` 以访问 `KvsServer`。
     pub fn connect(addr: SocketAddr) -> impl Future<Item = Self, Error = KvsError> {
         TcpStream::connect(&addr)
             .map(|tcp| {
@@ -31,7 +31,7 @@ impl KvsClient {
             .map_err(|e| e.into())
     }
 
-    /// Get the value of a given key from the server.
+    /// 从服务器获取指定键的值。
     pub fn get(self, key: String) -> impl Future<Item = (Option<String>, Self), Error = KvsError> {
         self.send_request(Request::Get { key })
             .and_then(move |(resp, client)| match resp {
@@ -42,7 +42,7 @@ impl KvsClient {
             })
     }
 
-    /// Set the value of a string key in the server.
+    /// 在服务器中设置字符串键的值。
     pub fn set(self, key: String, value: String) -> impl Future<Item = Self, Error = KvsError> {
         self.send_request(Request::Set { key, value })
             .and_then(move |(resp, client)| match resp {
@@ -53,7 +53,7 @@ impl KvsClient {
             })
     }
 
-    /// Remove a string key in the server.
+    /// 从服务器中删除字符串键。
     pub fn remove(self, key: String) -> impl Future<Item = Self, Error = KvsError> {
         self.send_request(Request::Remove { key })
             .and_then(move |(resp, client)| match resp {

@@ -19,7 +19,7 @@ pub trait HandlerFactory: Sync + Send + 'static {
 
 pub struct ServerBuilder {
     name: String,
-    // Service name -> service methods
+    // 服务名称 -> 服务方法
     pub(crate) services: HashMap<&'static str, Box<dyn HandlerFactory>>,
 }
 
@@ -38,7 +38,7 @@ impl ServerBuilder {
     ) -> Result<()> {
         match self.services.entry(service_name) {
             Entry::Occupied(_) => Err(Error::Other(format!(
-                "{} has already registered",
+                "{} 已经注册",
                 service_name
             ))),
             Entry::Vacant(entry) => {
@@ -89,7 +89,7 @@ impl Server {
             Some(n) => n,
             None => {
                 return Box::pin(future::err(Error::Unimplemented(format!(
-                    "unknown {}",
+                    "未知 {}",
                     fq_name
                 ))));
             }
@@ -98,7 +98,7 @@ impl Server {
             Some(n) => n,
             None => {
                 return Box::pin(future::err(Error::Unimplemented(format!(
-                    "unknown {}",
+                    "未知 {}",
                     fq_name
                 ))));
             }
@@ -108,7 +108,7 @@ impl Server {
             handle(req)
         } else {
             Box::pin(future::err(Error::Unimplemented(format!(
-                "unknown {}",
+                "未知 {}",
                 fq_name
             ))))
         }

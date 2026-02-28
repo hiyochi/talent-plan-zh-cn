@@ -9,7 +9,7 @@ pub mod kvraft;
 mod proto;
 pub mod raft;
 
-/// A place holder for suppressing unused_variables warning.
+/// 用于抑制未使用变量警告的占位符函数。
 fn your_code_here<T>(_: T) -> ! {
     unimplemented!()
 }

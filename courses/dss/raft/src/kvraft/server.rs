@@ -1,3 +1,4 @@
+```rust
 use futures::channel::mpsc::unbounded;
 
 use crate::proto::kvraftpb::*;
@@ -6,9 +7,9 @@ use crate::raft;
 pub struct KvServer {
     pub rf: raft::Node,
     me: usize,
-    // snapshot if log grows this big
+    // 如果日志增长到这么大，则进行快照
     maxraftstate: Option<usize>,
-    // Your definitions here.
+    // 你的定义写在这里。
 }
 
 impl KvServer {
@@ -18,7 +19,7 @@ impl KvServer {
         persister: Box<dyn raft::persister::Persister>,
         maxraftstate: Option<usize>,
     ) -> KvServer {
-        // You may need initialization code here.
+        // 你可能需要在这里写一些初始化代码。
 
         let (tx, apply_ch) = unbounded();
         let rf = raft::Raft::new(servers, me, persister, tx);
@@ -28,7 +29,7 @@ impl KvServer {
 }
 
 impl KvServer {
-    /// Only for suppressing deadcode warnings.
+    /// 仅用于抑制未使用代码的警告。
     #[doc(hidden)]
     pub fn __suppress_deadcode(&mut self) {
         let _ = &self.me;
@@ -36,56 +37,55 @@ impl KvServer {
     }
 }
 
-// Choose concurrency paradigm.
+// 选择并发范式。
 //
-// You can either drive the kv server by the rpc framework,
+// 你可以通过 rpc 框架驱动 kv 服务器，
 //
 // ```rust
 // struct Node { server: Arc<Mutex<KvServer>> }
 // ```
 //
-// or spawn a new thread runs the kv server and communicate via
-// a channel.
+// 或者启动一个新线程运行 kv 服务器并通过
+// 通道进行通信。
 //
 // ```rust
 // struct Node { sender: Sender<Msg> }
 // ```
 #[derive(Clone)]
 pub struct Node {
-    // Your definitions here.
+    // 你的定义写在这里。
 }
 
 impl Node {
     pub fn new(kv: KvServer) -> Node {
-        // Your code here.
+        // 你的代码写在这里。
         crate::your_code_here(kv);
     }
 
-    /// the tester calls kill() when a KVServer instance won't
-    /// be needed again. you are not required to do anything
-    /// in kill(), but it might be convenient to (for example)
-    /// turn off debug output from this instance.
+    /// 当 KVServer 实例不再需要时，测试器会调用 kill()。
+    /// 你不需要在 kill() 中做任何事情，但可能希望（例如）
+    /// 关闭此实例的调试输出。
     pub fn kill(&self) {
-        // If you want to free some resources by `raft::Node::kill` method,
-        // you should call `raft::Node::kill` here also to prevent resource leaking.
-        // Since the test framework will call kvraft::Node::kill only.
+        // 如果你想通过 `raft::Node::kill` 方法释放一些资源，
+        // 你也应该在这里调用 `raft::Node::kill` 以防止资源泄漏。
+        // 因为测试框架只会调用 kvraft::Node::kill。
         // self.server.kill();
 
-        // Your code here, if desired.
+        // 你的代码写在这里（如果需要的话）。
     }
 
-    /// The current term of this peer.
+    /// 此节点的当前任期。
     pub fn term(&self) -> u64 {
         self.get_state().term()
     }
 
-    /// Whether this peer believes it is the leader.
+    /// 此节点是否认为自己是领导者。
     pub fn is_leader(&self) -> bool {
         self.get_state().is_leader()
     }
 
     pub fn get_state(&self) -> raft::State {
-        // Your code here.
+        // 你的代码写在这里。
         raft::State {
             ..Default::default()
         }
@@ -94,15 +94,16 @@ impl Node {
 
 #[async_trait::async_trait]
 impl KvService for Node {
-    // CAVEATS: Please avoid locking or sleeping here, it may jam the network.
+    // 注意：请避免在此处加锁或睡眠，这可能会阻塞网络。
     async fn get(&self, arg: GetRequest) -> labrpc::Result<GetReply> {
-        // Your code here.
+        // 你的代码写在这里。
         crate::your_code_here(arg)
     }
 
-    // CAVEATS: Please avoid locking or sleeping here, it may jam the network.
+    // 注意：请避免在此处加锁或睡眠，这可能会阻塞网络。
     async fn put_append(&self, arg: PutAppendRequest) -> labrpc::Result<PutAppendReply> {
-        // Your code here.
+        // 你的代码写在这里。
         crate::your_code_here(arg)
     }
 }
+```

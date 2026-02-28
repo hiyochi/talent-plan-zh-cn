@@ -1,3 +1,4 @@
+```rust
 use std::fmt;
 
 use crate::proto::kvraftpb::*;
@@ -10,7 +11,7 @@ enum Op {
 pub struct Clerk {
     pub name: String,
     pub servers: Vec<KvClient>,
-    // You will have to modify this struct.
+    // 你需要修改这个结构体。
 }
 
 impl fmt::Debug for Clerk {
@@ -21,28 +22,28 @@ impl fmt::Debug for Clerk {
 
 impl Clerk {
     pub fn new(name: String, servers: Vec<KvClient>) -> Clerk {
-        // You'll have to add code here.
+        // 你需要在这里添加代码。
         // Clerk { name, servers }
         crate::your_code_here((name, servers))
     }
 
-    /// fetch the current value for a key.
-    /// returns "" if the key does not exist.
-    /// keeps trying forever in the face of all other errors.
+    /// 获取某个键的当前值。
+    /// 如果键不存在，则返回 ""。
+    /// 面对所有其他错误时，会一直尝试直到成功。
     //
-    // you can send an RPC with code like this:
-    // if let Some(reply) = self.servers[i].get(args).wait() { /* do something */ }
+    // 你可以使用如下代码发送 RPC：
+    // if let Some(reply) = self.servers[i].get(args).wait() { /* 执行某些操作 */ }
     pub fn get(&self, key: String) -> String {
-        // You will have to modify this function.
+        // 你需要修改这个函数。
         crate::your_code_here(key)
     }
 
-    /// shared by Put and Append.
+    /// 由 Put 和 Append 共享。
     //
-    // you can send an RPC with code like this:
+    // 你可以使用如下代码发送 RPC：
     // let reply = self.servers[i].put_append(args).unwrap();
     fn put_append(&self, op: Op) {
-        // You will have to modify this function.
+        // 你需要修改这个函数。
         crate::your_code_here(op)
     }
 
@@ -54,3 +55,4 @@ impl Clerk {
         self.put_append(Op::Append(key, value))
     }
 }
+```

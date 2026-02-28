@@ -21,41 +21,41 @@ struct Opt {
 
 #[derive(StructOpt, Debug)]
 enum Command {
-    #[structopt(name = "get", about = "Get the string value of a given string key")]
+    #[structopt(name = "get", about = "获取指定字符串键的字符串值")]
     Get {
-        #[structopt(name = "KEY", help = "A string key")]
+        #[structopt(name = "KEY", help = "一个字符串键")]
         key: String,
         #[structopt(
             long,
-            help = "Sets the server address",
+            help = "设置服务器地址",
             raw(value_name = "ADDRESS_FORMAT"),
             raw(default_value = "DEFAULT_LISTENING_ADDRESS"),
             parse(try_from_str)
         )]
         addr: SocketAddr,
     },
-    #[structopt(name = "set", about = "Set the value of a string key to a string")]
+    #[structopt(name = "set", about = "将字符串键的值设置为字符串")]
     Set {
-        #[structopt(name = "KEY", help = "A string key")]
+        #[structopt(name = "KEY", help = "一个字符串键")]
         key: String,
-        #[structopt(name = "VALUE", help = "The string value of the key")]
+        #[structopt(name = "VALUE", help = "键的字符串值")]
         value: String,
         #[structopt(
             long,
-            help = "Sets the server address",
+            help = "设置服务器地址",
             raw(value_name = "ADDRESS_FORMAT"),
             raw(default_value = "DEFAULT_LISTENING_ADDRESS"),
             parse(try_from_str)
         )]
         addr: SocketAddr,
     },
-    #[structopt(name = "rm", about = "Remove a given string key")]
+    #[structopt(name = "rm", about = "删除指定的字符串键")]
     Remove {
-        #[structopt(name = "KEY", help = "A string key")]
+        #[structopt(name = "KEY", help = "一个字符串键")]
         key: String,
         #[structopt(
             long,
-            help = "Sets the server address",
+            help = "设置服务器地址",
             raw(value_name = "ADDRESS_FORMAT"),
             raw(default_value = "DEFAULT_LISTENING_ADDRESS"),
             parse(try_from_str)
@@ -79,7 +79,7 @@ fn run(opt: Opt) -> Result<()> {
             if let Some(value) = client.get(key)? {
                 println!("{}", value);
             } else {
-                println!("Key not found");
+                println!("键未找到");
             }
         }
         Command::Set { key, value, addr } => {

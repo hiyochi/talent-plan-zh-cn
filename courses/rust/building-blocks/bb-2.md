@@ -1,105 +1,52 @@
-# PNA Rust &mdash; Building Blocks 2
+# PNA Rust — 构建模块 2
 
-Let's learn some building blocks!
+让我们学习一些构建模块！
 
-Put your other projects and concerns aside. Take a breath and relax. Here
-are some fun resources for you to explore.
+把其他项目和杂务都放到一边，深呼吸，放松一下。这里有一些有趣的资源供你探索。
 
-Read all the readings and perform all the exercises.
+请仔细阅读所有材料，并完成所有练习。
 
-- **[Reading: Damn Cool Algorithms: Log structured storage][lss]**. A simple
-  overview of the basic concept of log-structured storage. There are many
-  log-structured storage algorithms, and the particular one described here is
-  not the one you will be using.
+- **[阅读：Damn Cool Algorithms：日志结构化存储][lss]**。对日志结构化存储基本概念的简单概述。日志结构化存储算法有很多，但本文所描述的并非你将要使用的那种。
 
-- **[Reading: The Design and Implementation of a Log-Structured File
-  System][lsfs]**. The influential paper.
+- **[阅读：日志结构化文件系统的设计与实现][lsfs]**。一篇具有影响力的论文。
 
-- **[Reading: Bitcask: A Log-Structured Hash Table for Fast Key/Value Data][bc]**.
-  A simple but effective design for a key-value database, and one that uses
-  log-structured storage.
+- **[阅读：Bitcask：用于快速键值数据的日志结构化哈希表][bc]**。一种简单而有效的键值数据库设计，它使用了日志结构化存储。
 
-- **[Reading: Error Handling in Rust][e]**. Rust error handling is powerful, and
-  many Rust programmers adore it once they have gotten the hang of it. But it is
-  complex, and has a complex history of trial and error. This is a classic
-  in-depth article on best-practices for error handling in Rust. It is from
-  2015, and there have been some minor changes to error handling since then, but
-  there is a lot of wisdom in here. The author, [BurntSushi], has done much
-  experimenting with Rust error handling, and is considered an authority on that
-  and [other things].
+- **[阅读：Rust 中的错误处理][e]**。Rust 的错误处理功能强大，许多 Rust 程序员一旦掌握后就爱不释手。但它复杂，且有着复杂的发展历程。这是一篇关于 Rust 错误处理最佳实践的经典深度文章。该文发布于 2015 年，此后错误处理机制虽有小幅调整，但其中蕴含大量智慧。作者 [BurntSushi] 对 Rust 错误处理进行了大量实验，被公认为该领域及[其他方面]的权威。
 
-- **[Reading: `std::collections`][c]**. As a systems programmer it is crucial to
-  know the behavior of a variety of data structures well, if not their
-  implementations. The standard library's `collections` module has a pretty
-  amazing overview of the tradeoffs between a number of the most common
-  collection types in computer science. For this, you only need to read the
-  module docs.
+- **[阅读：`std::collections`][c]**。作为系统程序员，必须充分了解各种数据结构的行为（即使不一定要了解其具体实现）。Rust 标准库的 `collections` 模块对计算机科学中最常见的几种集合类型的权衡取舍提供了极为出色的概述。本部分只需阅读模块文档即可。
 
-- **[Reading: `std::io`][io]**. Again, you need to know your I/O tools, and
-  again the Rust `io` module docs, while not as brilliant reading as the
-  `collections` docs, provide a good overview of your toolset. You only need to
-  read the module docs.
+- **[阅读：`std::io`][io]**。同样，你必须熟悉你的 I/O 工具。虽然 Rust 的 `io` 模块文档不如 `collections` 那样精彩，但仍能为你提供工具集的全面概览。你只需阅读模块文档即可。
 
-- **Exercise: Serialize and deserialize a data structure with `serde` (JSON)**.
+- **练习：使用 `serde`（JSON）序列化和反序列化一个数据结构**。
 
-  This exercise and the next two will introduce basic serialization and
-  deserialization with [`serde`]. `serde` serializes data quickly and is easy to
-  use, while also being extensible and expressive.
+  本练习及接下来两个练习将介绍使用 [`serde`] 进行基础序列化与反序列化。`serde` 序列化速度快、使用简便，同时具备可扩展性和表达力。
 
-  For your serializable data structure, imagine a flat game-playing surface
-  covered in a grid of squares, like a chess board. Imagine you have a game
-  character that every turn may move any number of squares in a single
-  direction. Define a type, `Move` that represents a single move of that
-  character.
+  为你的可序列化数据结构设想一个平坦的游戏平面，上面布满网格状方格，类似国际象棋棋盘。假设你有一个游戏角色，每回合可沿单一方向移动任意数量的方格。定义一个类型 `Move`，表示该角色的一次移动。
 
-  Derive the [`Debug`] trait so `Move` is easily printable with the `{:?}`
-  format specifier.
+  派生 [`Debug`] 特性，以便使用 `{:?}` 格式说明符轻松打印 `Move`。
 
-  Write a `main` function that defines a variable, `a`, of type `Move`,
-  serializes it with [`serde`] to a [`File`], then deserializes it back again to a
-  variable, `b`, also of type `Move`.
+  编写一个 `main` 函数，定义一个类型为 `Move` 的变量 `a`，使用 [`serde`] 将其序列化到一个 [`File`] 中，然后再反序列化回另一个类型为 `Move` 的变量 `b`。
 
-  Use [JSON] as the serialization format.
+  使用 [JSON] 作为序列化格式。
 
-  Print `a` and `b` with `println!` and the `{:?}` format specifier to verify
-  successful deserialization.
+  使用 `println!` 和 `{:?}` 格式说明符打印 `a` 和 `b`，以验证反序列化成功。
 
-  Note that the `serde` book has many [examples] to work off of.
+  注意：`serde` 官方文档提供了许多[示例]可供参考。
 
-- **Exercise: Serialize and deserialize a data structure to a buffer with
-    `serde` (RON)**.
+- **练习：使用 `serde`（RON）将数据结构序列化和反序列化到缓冲区**。
 
-  Do the same as above, except this time, instead of serializing to a `File`,
-  serialize to a `Vec<u8>` buffer, and after that try using [RON] instead of
-  JSON as the format. Are there any differences in serialization to a `Vec`
-  instead of a `File`? What about in using the RON crate vs the JSON crate?
+  与上一练习相同，但这次不是序列化到 `File`，而是序列化到一个 `Vec<u8>` 缓冲区，并尝试使用 [RON] 替代 JSON 作为格式。序列化到 `Vec` 而非 `File` 是否有差异？使用 RON 库与 JSON 库相比又有什么不同？
 
-  Convert the `Vec<u8>` to `String` with [`str::from_utf8`], unwrapping the
-  result, then print that serialized string representation to see what `Move`
-  looks like serialized to RON.
+  使用 [`str::from_utf8`] 将 `Vec<u8>` 转换为 `String`，并解包结果，然后打印出该序列化后的字符串表示形式，观察 `Move` 被序列化为 RON 格式时的样子。
 
-- **Exercise: Serialize and deserialize 1000 data structures with `serde` (BSON)**.
+- **练习：使用 `serde`（BSON）序列化和反序列化 1000 个数据结构**。
 
-  This one is slightly different. Where the previous exercises serialized and
-  deserialized a single value to a buffer, in this one serialize 1000 different
-  `Move` values to a single file, back-to-back, then deserialize them again.
-  This time use the [BSON] format.
+  这个练习略有不同。前两个练习是将单个值序列化和反序列化到缓冲区，而本练习需将 1000 个不同的 `Move` 值连续序列化到一个文件中，然后再反序列化回来。这次使用 [BSON] 格式。
 
-  Things to discover here are whether serde automatically maintains the correct
-  file offsets (the "cursor") to deserialize multiple values in sequence, or if
-  you need to parse your own "frames" around each value to define their size,
-  and how to detect that there are no more values to parse at the end of the
-  file.
+  你需要探索的问题包括：`serde` 是否会自动维护正确的文件偏移量（“游标”）以连续反序列化多个值？还是你需要为每个值自行定义“帧”以标明其大小？以及如何检测文件末尾是否已无更多可解析的值。
 
-  After you've succeeded at serializing and deserializing multiple values to a
-  file, try it again with a `Vec<u8>`. Serializing and deserializing generally
-  requires the destination implement the [`Write`] and [`Read`] traits. Does
-  `Vec<u8>` implement either or both? What is the behavior of those
-  implementations? You may need to wrap your buffer in wrapper types that
-  implement these traits in order to get the correct behavior &mdash; the
-  API docs for the traits list all their implementors in the standard library,
-  and whatever you need will be in there somewhere.
-
+  成功将多个值序列化和反序列化到文件后，再尝试在 `Vec<u8>` 上进行相同操作。序列化和反序列化通常要求目标实现 [`Write`] 和 [`Read`] 特性。`Vec<u8>` 是否实现了其中任一或两者？这些实现的行为是怎样的？你可能需要将缓冲区包装在实现了这些特性的封装类型中，才能获得正确的行为 —— 这些特性的 API 文档列出了标准库中所有实现者，你需要的类型一定就在其中。
 
 [`File`]: https://doc.rust-lang.org/std/fs/struct.File.html
 [`Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
@@ -120,5 +67,5 @@ Read all the readings and perform all the exercises.
 [BurntSushi]: https://github.com/BurntSushi
 [other things]: https://github.com/BurntSushi/ripgrep
 
-<!-- TODO: better LSS paper -->
-<!-- TODO: want a general non-wikipedia survey of how databases and/or key/value dbs work -->
+<!-- TODO: 更好的 LSS 论文 -->
+<!-- TODO: 希望有一篇非维基百科的、关于数据库和/或键值数据库工作原理的综述性文章 -->

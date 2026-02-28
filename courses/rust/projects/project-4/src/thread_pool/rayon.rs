@@ -1,7 +1,7 @@
 use super::ThreadPool;
 use crate::{KvsError, Result};
 
-/// Wrapper of rayon::ThreadPool
+/// rayon::ThreadPool 的包装器
 pub struct RayonThreadPool(rayon::ThreadPool);
 
 impl ThreadPool for RayonThreadPool {

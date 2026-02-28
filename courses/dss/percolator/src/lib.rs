@@ -2,7 +2,7 @@
 #[macro_use]
 extern crate log;
 
-// After you finish the implementation, `#[allow(unused)]` should be removed.
+// 完成实现后，应移除 `#[allow(unused)]`。
 #[allow(dead_code, unused)]
 mod client;
 #[allow(unused)]
@@ -11,7 +11,7 @@ mod service;
 #[cfg(test)]
 mod tests;
 
-// This is related to protobuf as described in `msg.proto`.
+// 这与 `msg.proto` 中描述的 protobuf 相关。
 mod msg {
     include!(concat!(env!("OUT_DIR"), "/msg.rs"));
 }

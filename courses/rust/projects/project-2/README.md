@@ -1,168 +1,124 @@
-# PNA Rust Project 2: Log-structured file I/O
+# PNA Rust 项目 2：日志结构文件 I/O
 
-**Task**: Create a _persistent_ key/value store that _can be accessed from the
-command line_.
+**任务**：创建一个**持久化**的键值存储系统，该系统**可通过命令行访问**。
 
-**Goals**:
+**目标**：
 
-- Handle and report errors robustly
-- Use serde for serialization
-- Write data to disk as a log using standard file APIs
-- Read the state of the key/value store from disk
-- Map in-memory key-indexes to on-disk values
-- Periodically compact the log to remove stale data
+- 健壮地处理并报告错误
+- 使用 serde 进行序列化
+- 使用标准文件 API 将数据以日志形式写入磁盘
+- 从磁盘读取键值存储的状态
+- 将内存中的键索引映射到磁盘上的值
+- 定期压缩日志以移除过期数据
 
-**Topics**: log-structured file I/O, bitcask, the `failure` crate, `Read` /
-`Write` traits, the `serde` crate.
+**主题**：日志结构文件 I/O、bitcask、`failure` 库、`Read` / `Write` 特征、`serde` 库。
 
-- [Introduction](#user-content-introduction)
-- [Terminology](#user-content-terminology)
-- [Project spec](#user-content-project-spec)
-- [Project setup](#user-content-project-setup)
-- [Part 1: Error handling](#user-content-part-1-error-handling)
-- [Part 2: How the log behaves](#user-content-part-2-how-the-log-behaves)
-- [Part 3: Writing to the log](#user-content-part-3-writing-to-the-log)
-- [Part 4: Reading from the log](#user-content-part-4-reading-from-the-log)
-- [Part 5: Storing log pointers in the index](#user-content-part-5-storing-log-pointers-in-the-index)
-- [Part 6: Stateless vs. stateful `KvStore`](#user-content-part-6-stateless-vs-stateful-kvstore)
-- [Part 7: Compacting the log](#user-content-part-7-compacting-the-log)
+- [引言](#user-content-introduction)
+- [术语](#user-content-terminology)
+- [项目规范](#user-content-project-spec)
+- [项目设置](#user-content-project-setup)
+- [第 1 部分：错误处理](#user-content-part-1-error-handling)
+- [第 2 部分：日志的行为](#user-content-part-2-how-the-log-behaves)
+- [第 3 部分：写入日志](#user-content-part-3-writing-to-the-log)
+- [第 4 部分：从日志读取](#user-content-part-4-reading-from-the-log)
+- [第 5 部分：在索引中存储日志指针](#user-content-part-5-storing-log-pointers-in-the-index)
+- [第 6 部分：无状态与有状态的 `KvStore`](#user-content-part-6-stateless-vs-stateful-kvstore)
+- [第 7 部分：压缩日志](#user-content-part-7-compacting-the-log)
 
 
-## Introduction
+## 引言
 
-In this project you will create a simple on-disk key/value store that can be
-modified and queried from the command line. It will use a simplification of the
-storage algorithm used by [bitcask], chosen for its combination of simplicity
-and effectiveness. You will start by maintaining a _log_ (sometimes called a
-["write-ahead log"][wal] or "WAL") on disk of previous write commands that is
-evaluated on startup to re-create the state of the database in memory. Then you
-will extend that by storing only the keys in memory, along with offsets into the
-on-disk log. Finally, you will introduce log compaction so that it does not grow
-indefinitely. At the end of this project you will have built a simple, but
-well-architected database using Rust file APIs.
+在本项目中，您将创建一个简单的磁盘键值存储系统，可通过命令行进行修改和查询。它将采用 [bitcask] 使用的存储算法的简化版本，该算法因其简洁性和高效性而被选中。您将从维护一个磁盘上的**日志**（有时称为“预写日志”[wal] 或 WAL）开始，该日志记录了先前的写入命令，并在启动时重新执行以重建数据库在内存中的状态。然后，您将扩展此设计，仅在内存中存储键，以及指向磁盘日志的偏移量。最后，您将引入日志压缩机制，以防止日志无限增长。完成本项目后，您将使用 Rust 文件 API 构建一个简单但架构良好的数据库。
 
 [wal]: https://en.wikipedia.org/wiki/Write-ahead_logging
 [bitcask]: https://github.com/basho/bitcask
 
 
 <!--
-## Basic database architecture
+## 基本数据库架构
 
 TODO
 
-- Basic description and terminology of log, memtable, blocks, etc
-- good opportunity for a diagram
-- find a good background reading
-- using the os page cache for caching
+- 日志、内存表、块等的基本描述和术语
+- 良好的图表机会
+- 找到好的背景阅读材料
+- 使用操作系统页面缓存进行缓存
 -->
 
-## Terminology
+## 术语
 
-Some terminology we will use in this course. It is the same as or inspired by
-[bitcask]. Different databases will have slightly different terminology.
+本课程中我们将使用的一些术语。这些术语与 [bitcask] 相同或受其启发。不同数据库的术语略有不同。
 
-- _command_ - A request or the representation of a request made to the database.
-  These are issued on the command line or over the network. They have an
-  in-memory representation, a textual representation, and a machine-readable
-  serialized representation.
-- _log_ - An on-disk sequence of commands, in the order originally received and
-  executed. Our database's on-disk format is almost entirely made up of logs. It
-  will be simple, but also surprisingly efficient.
-- _log pointer_ - A file offset into the log. Sometimes we'll just call this a
-  "file offset".
-- _log compaction_ - As writes are issued to the database they sometimes
-  invalidate old log entries. For example, writing key/value `a = 0` then
-  writing `a = 1`, makes the first log entry for "a" useless. Compaction &mdash;
-  in our database at least &mdash; is the process of reducing the size of the
-  database by remove stale commands from the log.
-- _in-memory index_ (or _index_) - A map of keys to log pointers. When a read
-  request is issued, the in-memory index is searched for the appropriate log
-  pointer, and when it is found the value is retrieved from the on-disk log. In
-  our key/value store, like in bitcask, the index for the _entire database_ is
-  stored in memory.
-- _index file_ - The on-disk representation of the in-memory index. Without this
-  the log would need to be completely replayed to restore the state of the
-  in-memory index each time the database is started.
+- _命令_ — 对数据库发出的请求或请求的表示形式。这些请求通过命令行或网络发出。它们具有内存表示、文本表示和机器可读的序列化表示。
+- _日志_ — 按原始接收和执行顺序排列的磁盘命令序列。我们的数据库的磁盘格式几乎完全由日志组成。它将非常简单，但也出人意料地高效。
+- _日志指针_ — 日志中的文件偏移量。有时我们直接称之为“文件偏移”。
+- _日志压缩_ — 当向数据库写入数据时，有时会使旧的日志条目失效。例如，先写入 `a = 0`，再写入 `a = 1`，会使第一个关于 "a" 的日志条目变得无用。压缩 — 至少在我们的数据库中 — 是通过从日志中移除过期命令来减少数据库大小的过程。
+- _内存索引_（或 _索引_）— 键到日志指针的映射。当发出读取请求时，会在内存索引中搜索相应的日志指针，找到后从磁盘日志中检索值。在我们的键值存储中，与 bitcask 一样，整个数据库的索引都存储在内存中。
+- _索引文件_ — 内存索引的磁盘表示形式。如果没有此文件，每次启动数据库时都需要完全重放日志才能恢复内存索引的状态。
 
 
-## Project spec
+## 项目规范
 
-The cargo project, `kvs`, builds a command-line key-value store client called
-`kvs`, which in turn calls into a library called `kvs`.
+cargo 项目 `kvs` 构建了一个名为 `kvs` 的命令行键值存储客户端，该客户端调用一个名为 `kvs` 的库。
 
-The `kvs` executable supports the following command line arguments:
+`kvs` 可执行程序支持以下命令行参数：
 
 - `kvs set <KEY> <VALUE>`
 
-  Set the value of a string key to a string.
-  Print an error and return a non-zero exit code on failure.
+  将字符串键的值设置为字符串。
+  失败时打印错误并返回非零退出码。
 
 - `kvs get <KEY>`
 
-  Get the string value of a given string key.
-  Print an error and return a non-zero exit code on failure.
+  获取给定字符串键的字符串值。
+  失败时打印错误并返回非零退出码。
 
 - `kvs rm <KEY>`
 
-  Remove a given key.
-  Print an error and return a non-zero exit code on failure.
+  删除给定键。
+  失败时打印错误并返回非零退出码。
 
 - `kvs -V`
 
-  Print the version
+  打印版本号
 
-The `kvs` library contains a type, `KvStore`, that supports the following
-methods:
+`kvs` 库包含一个类型 `KvStore`，支持以下方法：
 
 - `KvStore::set(&mut self, key: String, value: String) -> Result<()>`
 
-  Set the value of a string key to a string.
-  Return an error if the value is not written successfully.
+  将字符串键的值设置为字符串。
+  如果值未成功写入，则返回错误。
 
 - `KvStore::get(&mut self, key: String) -> Result<Option<String>>`
 
-  Get the string value of a string key.
-  If the key does not exist, return `None`.
-  Return an error if the value is not read successfully.
+  获取字符串键的字符串值。
+  如果键不存在，则返回 `None`。
+  如果值未成功读取，则返回错误。
 
 - `KvStore::remove(&mut self, key: String) -> Result<()>`
 
-  Remove a given key.
-  Return an error if the key does not exist or is not removed successfully.
+  删除给定键。
+  如果键不存在或未成功删除，则返回错误。
 
 - `KvStore::open(path: impl Into<PathBuf>) -> Result<KvStore>`
 
-  Open the KvStore at a given path.
-  Return the KvStore.
+  在给定路径打开 KvStore。
+  返回 KvStore。
 
-When setting a key to a value, `kvs` writes the `set` command to disk in a
-sequential log, then stores the log pointer (file offset) of that command in the
-in-memory index from key to pointer. When removing a key, similarly, `kvs`
-writes the `rm` command in the log, then removes the key from the in-memory
-index.  When retrieving a value for a key with the `get` command, it searches
-the index, and if found then loads from the log the command at the corresponding
-log pointer, evaluates the command and returns the result.
+当设置键值时，`kvs` 将 `set` 命令写入磁盘的顺序日志中，然后将该命令的日志指针（文件偏移）存储在从键到指针的内存索引中。删除键时，类似地，`kvs` 在日志中写入 `rm` 命令，然后从内存索引中移除该键。当使用 `get` 命令检索键的值时，它会在索引中搜索，如果找到，则从日志中对应日志指针处加载命令，执行该命令并返回结果。
 
-On startup, the commands in the log are traversed from oldest to newest, and the
-in-memory index rebuilt.
+启动时，日志中的命令按从旧到新的顺序遍历，重建内存索引。
 
-When the size of the uncompacted log entries reach a given threshold, `kvs`
-compacts it into a new log, removing redundent entries to reclaim disk space.
+当未压缩的日志条目大小达到给定阈值时，`kvs` 将其压缩到一个新日志中，移除冗余条目以回收磁盘空间。
 
-Note that our `kvs` project is both a stateless command-line program, and a
-library containing a stateful `KvStore` type: for CLI use the `KvStore` type
-will load the index, execute the command, then exit; for library use it will
-load the index, then execute multiple commands, maintaining the index state,
-until it is dropped.
+请注意，我们的 `kvs` 项目既是无状态的命令行程序，也是一个包含有状态 `KvStore` 类型的库：用于 CLI 时，`KvStore` 类型将加载索引、执行命令，然后退出；用于库时，它将加载索引，然后执行多个命令，保持索引状态，直到被丢弃。
 
 
-## Project setup
+## 项目设置
 
-Continuing from your previous project, delete your previous `tests` directory and
-copy this project's `tests` directory into its place. Like the previous project,
-this project should contain a library and an executable, both named `kvs`.
+继续您之前的项目，删除之前的 `tests` 目录，并将本项目的 `tests` 目录复制到其位置。与之前的项目一样，本项目应包含一个名为 `kvs` 的库和一个名为 `kvs` 的可执行程序。
 
-You need the following dev-dependencies in your `Cargo.toml`:
+您需要在 `Cargo.toml` 中添加以下开发依赖项：
 
 ```toml
 [dev-dependencies]
@@ -172,312 +128,206 @@ tempfile = "3.0.7"
 walkdir = "2.2.7"
 ```
 
-As with the previous project, go ahead and write enough empty or panicking
-definitions to make the test cases build.
+与之前的项目一样，请继续编写足够多的空定义或恐慌定义，使测试用例能够构建。
 
-_Do that now._
+_现在就做这件事。_
 
 
-## Part 1: Error handling
+## 第 1 部分：错误处理
 
-In this project it will be possible for the code to fail due to I/O errors. So
-before we get started implementing a database we need to do one more thing that
-is crucial to Rust projects: decide on an error handling strategy.
+在本项目中，代码可能因 I/O 错误而失败。因此，在开始实现数据库之前，我们需要做一件对 Rust 项目至关重要的事情：决定错误处理策略。
 
 <!-- TODO outline strategies? -->
 
-Rust's error handling is powerful, but involves a lot of boilerplate to use
-correctly. For this project the [`failure`] crate will provide the tools to
-easily handle errors of all kinds.
+Rust 的错误处理功能强大，但正确使用需要大量样板代码。对于本项目，[`failure`] 库将提供轻松处理各种错误的工具。
 
 [`failure`]: https://docs.rs/failure/0.1.5/failure/
 
-The [failure guide][fg] describes [several] error handling patterns.
+[失败指南][fg] 描述了[几种]错误处理模式。
 
 [fg]: https://boats.gitlab.io/failure/
 [several]: https://boats.gitlab.io/failure/guidance.html
 
-Pick one of those strategies and, in your library, either define your own error
-type or import `failure`s `Error`. This is the error type you will use in all of
-your `Result`s, converting error types from other crates to your own with the
-`?` operator.
+选择其中一种策略，在您的库中定义您自己的错误类型，或导入 `failure` 的 `Error`。这是您将在所有 `Result` 中使用的错误类型，并使用 `?` 操作符将其他库的错误类型转换为您的错误类型。
 
-After that, define a type alias for `Result` that includes your concrete error
-type, so that you don't need to type `Result<T, YourErrorType>` everywhere, but
-can simply type `Result<T>`. This is a common Rust pattern.
+之后，定义一个包含您具体错误类型的 `Result` 类型别名，这样您就不必到处键入 `Result<T, YourErrorType>`，而只需键入 `Result<T>`。这是一种常见的 Rust 模式。
 
-Finally, import those types into your executable with `use` statements, and
-change `main`s function signature to return `Result<()>`. All functions in your
-library that may fail will pass these `Results` back down the stack all the way
-to `main`, and then to the Rust runtime, which will print an error.
+最后，使用 `use` 语句将这些类型导入您的可执行程序，并将 `main` 函数签名更改为返回 `Result<()>`。您的库中所有可能失败的函数都将这些 `Results` 向下传递到 `main`，然后传递给 Rust 运行时，由其打印错误。
 
-Run `cargo check` to look for compiler errors, then fix them. For now it's
-ok to end `main` with `panic!()` to make the project build.
+运行 `cargo check` 查找编译器错误，然后修复它们。目前，您可以在 `main` 结尾使用 `panic!()` 使项目构建。
 
-_Set up your error handling strategy before continuing._
+_在继续之前设置您的错误处理策略。_
 
-As with the previous project, you'll want to create placeholder data structures
-and methods so that the tests compile. Now that you have defined an error type
-this should be straightforward. Add panics anywhere necessary to get the test
-suite to compile (`cargo test --no-run`).
-
+与之前的项目一样，您需要创建占位符数据结构和方法，以便测试能够编译。现在您已经定义了错误类型，这应该很简单。在必要处添加恐慌，使测试套件能够编译（`cargo test --no-run`）。
 
 <!--
-## Aside: The history of Rust error handling
+## 附录：Rust 错误处理的历史
 -->
 
-_Note: Error-handling practices in Rust are still evolving. This course
-currently uses the [`failure`] crate to make defining error types easier. While
-`failure` has a good design, its use is [arguably not a best practice][nbp]. It
-may not continue to be viewed favorably by Rust experts. Future iterations
-of the course will likely not use `failure`. In the meantime, it is fine, and
-presents an opportunity to learn more of the history and nuance of Rust error
-handling._
+_注意：Rust 中的错误处理实践仍在发展中。本课程目前使用 [`failure`] 库以简化错误类型的定义。虽然 `failure` 设计良好，但其使用[可能不是最佳实践][nbp]。它可能不会继续受到 Rust 专家的青睐。未来课程版本可能不再使用 `failure`。同时，使用它是可以接受的，并提供了一个学习 Rust 错误处理历史和细微差别的机会。_
 
 [nbp]: https://github.com/rust-lang-nursery/rust-cookbook/issues/502#issue-387418261
 
 <!--
-Rust error handling has a long and winding history. Expert Rust programmers will
-be aware of it, as that history informs and explains modern Rust error handling.
+Rust 错误处理有着漫长而曲折的历史。专家级 Rust 程序员会了解这段历史，因为这段历史塑造并解释了现代 Rust 错误处理。
 
 TODO
 -->
 
 
-## Part 2: How the log behaves
+## 第 2 部分：日志的行为
 
-Now we are finally going to begin implementing the beginnings of a real database
-by reading and writing from disk. You will use [`serde`] to serialize the "set"
-and "rm" commands to a string, and the standard file I/O APIs to write it to
-disk.
+现在我们终于要开始实现真正的数据库，通过磁盘读写。您将使用 [`serde`] 将“set”和“rm”命令序列化为字符串，并使用标准文件 I/O API 将其写入磁盘。
 
 [`serde`]: https://serde.rs/
 
-This is the basic behavior of `kvs` with a log:
+这是 `kvs` 使用日志的基本行为：
 
-- "set"
-  - The user invokes `kvs set mykey myvalue`
-   - `kvs` creates a value representing the "set" command, containing its key and
-    value
-  - It then serializes that command to a `String`
-  - It then appends the serialized command to a file containing the log
-  - If that succeeds, it exits silently with error code 0
-  - If it fails, it exits by printing the error and returning a non-zero error code
-- "get"
-  - The user invokes `kvs get mykey`
-  - `kvs` reads the entire log, one command at a time, recording the 
-   affected key and file offset of the command to an in-memory _key -> log
-    pointer_ map
-  - It then checks the map for the log pointer
-  - If it fails, it prints "Key not found", and exits with exit code 0
-  - If it succeeds
-    - It deserializes the command to get the last recorded value of the key
-    - It prints the value to stdout and exits with exit code 0
-- "rm"
-  - The user invokes `kvs rm mykey`
-  - Same as the "get" command, `kvs` reads the entire log to build the in-memory
-    index
-  - It then checks the map if the given key exists
-  - If the key does not exist, it prints "Key not found", and exits with a
-    non-zero error code
-  - If it succeeds
-    - It creates a value representing the "rm" command, containing its key
-    - It then appends the serialized command to the log
-    - If that succeeds, it exits silently with error code 0
+- “set”
+  - 用户调用 `kvs set mykey myvalue`
+  - `kvs` 创建一个表示“set”命令的值，包含其键和值
+  - 然后将其序列化为 `String`
+  - 然后将序列化的命令追加到包含日志的文件中
+  - 如果成功，则静默退出，退出码为 0
+  - 如果失败，则打印错误并返回非零错误码
+- “get”
+  - 用户调用 `kvs get mykey`
+  - `kvs` 逐条读取整个日志，记录每个命令影响的键和文件偏移量到内存中的 _键 -> 日志指针_ 映射
+  - 然后检查映射中是否存在该日志指针
+  - 如果失败，则打印“Key not found”，并以退出码 0 退出
+  - 如果成功
+    - 反序列化命令以获取键的最后记录值
+    - 将值打印到 stdout 并以退出码 0 退出
+- “rm”
+  - 用户调用 `kvs rm mykey`
+  - 与“get”命令相同，`kvs` 读取整个日志以构建内存索引
+  - 然后检查映射中是否存在给定键
+  - 如果键不存在，则打印“Key not found”，并以非零错误码退出
+  - 如果成功
+    - 创建一个表示“rm”命令的值，包含其键
+    - 然后将序列化的命令追加到日志中
+    - 如果成功，则静默退出，退出码为 0
 
-The log is a record of the transactions committed to the database. By
-"replaying" the records in the log on startup we reconstruct the previous state
-of the database.
+日志是已提交到数据库的事务记录。通过在启动时“重放”日志中的记录，我们可以重建数据库的先前状态。
 
-In this iteration you may store the value of the keys directly in memory (and
-thus never read from the log after initial startup and log replay). In a future
-iteration you will store only "log pointers" (file offsets) into the log.
+在此迭代中，您可以直接在内存中存储键的值（因此在初始启动和日志重放后无需再从日志读取）。在未来的迭代中，您将仅存储日志中的“日志指针”（文件偏移）。
 
+## 第 3 部分：写入日志
 
-## Part 3: Writing to the log
+您将首先实现“set”流程。这里有许多步骤。其中大多数实现起来都很直接，您可以通过运行相应的 `cli_*` 测试用例来验证是否已完成。
 
-You will start by implementing the "set" flow. There are a number of steps here.
-Most of them are straightforward to implement and you can verify you've done so
-by running the appropriate `cli_*` test cases.
+`serde` 是一个大型库，具有许多选项并支持多种序列化格式。基本序列化和反序列化仅需要正确注释您的数据结构，并调用函数将其写入 `String` 或实现 `Write` 的流。
 
-`serde` is a large library, with many options, and supporting many serialization
-formats. Basic serialization and deserialization only requires annotating
-your data structure correctly, and calling a function to write it
-either to a `String` or a stream implementing `Write`.
+您需要选择一种序列化格式。思考您希望在序列化格式中具备的属性 —— 您希望优先考虑性能吗？您希望能够在纯文本中读取日志内容吗？这是您的选择，但也许您应在代码中添加注释说明原因。
 
-You need to pick a serialization format. Think about the properties you want in
-your serialization format &mdash; do you want to prioritize performance? Do you
-want to be able to read the content of the log in plain text? It's your choice,
-but maybe you should include a comment in the code explaining it.
+其他需要考虑的事项包括：系统在哪里执行缓冲？您在哪里需要缓冲？缓冲对后续读取有何影响？何时打开和关闭文件句柄？每个命令一次？还是在整个 `KvStore` 生命周期内？
 
-Other things to consider include: where is the system performing buffering and
-where do you need buffering? What is the impact of buffering on subsequent
-reads? When should you open and close file handles? For each command? For the
-lifetime of the `KvStore`?
+您调用的一些 API 可能失败并返回某种错误类型的 `Result`。确保您的调用函数返回您自己的错误类型的 `Result`，并使用 `?` 在两者之间进行转换。
 
-Some of the APIs you will call may fail, and return a `Result` of some error type.
-Make sure that your calling functions return a `Result` of _your own_ error type,
-and that you convert between the two with `?`.
+实现“rm”命令类似，但您在将命令写入日志之前应额外检查键是否存在。由于我们有两种不同的命令需要区分，您可以使用单个枚举类型的变体来表示每个命令。`serde` 对枚举的支持非常完美。
 
-It is similar to implementing the "rm" command, but you should additionally
-check if the key exists before writing the command to the log. As we have two
-different commands that must be distinguished, you may use variants of a single
-enum type to represent each command. `serde` just works perfectly with enums.
+现在您可以实现“set”和“rm”命令，重点关注 `set` / `rm` 测试用例，或者继续阅读下一节了解“get”命令。同时考虑两者，或同时实现它们，可能会有所帮助。由您决定。
 
-You may implement the "set" and "rm" commands now, focusing on the `set` / `rm`
-test cases, or you can proceed to the next section to read about the "get"
-command. It may help to keep both in mind, or to implement them both
-simultaneously. It is your choice.
+## 第 4 部分：从日志读取
 
+现在是实现“get”的时候了。在本部分中，您不需要在索引中存储日志指针，我们将在下一部分完成这项工作。相反，只需在启动时逐条读取日志中的每个命令，执行它们以将每个键和值保存在内存中。然后从内存中读取。
 
-## Part 4: Reading from the log
+您应该一次性将日志中的所有记录读入内存，然后重放它们到您的映射类型中；还是逐条读取并在重放时将其插入映射？您应该在反序列化前将数据读入缓冲区，还是直接从文件流反序列化？请思考您方法的内存使用情况。思考从 I/O 流读取与内核的交互方式。
 
-Now it's time to implement "get". In this part, you don't need to store
-log pointers in the index, we will leave the work to the next part. Instead,
-just read each command in the log on startup, executing them to save every key
-and value in the memory. Then read from the memory.
+请记住，“get”可能找不到值，这种情况必须特殊处理。在这里，我们的 API 返回 `None`，我们的命令行客户端打印特定消息并以零退出码退出。
 
-Should you read all records in the log into memory at once and then replay
-them into your map type; or should you read them one at a time while
-replaying them into your map? Should you read into a buffer before deserializing
-or deserialize from a file stream? Think about the memory usage of your approach.
-Think about the way reading from I/O streams interacts with the kernel.
-
-Remember that "get" may not find a value and that case has to be handled
-specially. Here, our API returns `None` and our command line client prints
-a particular message and exits with a zero exit code.
-
-There's one complication to reading the log, and you may have already considered
-it while writing the "set" code: how do you distinguish between each record in
-the log? That is, how do you know when to stop reading one record, and start
-reading the next? Do you even need to? Maybe serde will deserialize a record
-directly from an I/O stream and stop reading when it's done, leaving the
-file cursor in the correct place to read subsequent records. Maybe serde will
-report an error when it sees two records back-to-back. Maybe you need to insert
-additional information to distinguish the length of each record. Maybe not.
+读取日志有一个复杂之处，您在编写“set”代码时可能已经考虑过：如何区分日志中的每条记录？也就是说，您如何知道何时停止读取一条记录并开始读取下一条？您甚至需要这样做吗？也许 serde 会直接从 I/O 流反序列化一条记录，并在完成后停止读取，将文件指针留在正确位置以读取后续记录。也许 serde 在看到两条连续记录时会报告错误。也许您需要插入额外信息来区分每条记录的长度。也许不需要。
 
 [`serde`]: https://serde.rs/
 
-_Implement "get" now_.
+_现在实现“get”。_
 
 
-## Part 5: Storing log pointers in the index
+## 第 5 部分：在索引中存储日志指针
 
-At this point most, if not all (besides the compaction test), other test suite should all pass. The changes
-introduced in the next steps are simple optimizations, necessary for fast
-performance and reduced storage. As you implement them, pay attention to what
-exactly they are optimizing for.
+此时，大多数（如果不是全部，除了压缩测试）其他测试套件都应该通过。接下来步骤中引入的更改是简单的优化，对于快速性能和减少存储是必要的。在实现它们时，请注意它们具体优化了什么。
 
-As we've described, the database you are building maintains an in-memory index
-of all keys in the database. That index maps from string keys to log pointers,
-not the values themselves.
+正如我们所描述的，您正在构建的数据库维护着数据库中所有键的内存索引。该索引将字符串键映射到日志指针，而不是值本身。
 
-This change introduces the need to perform reads from the log
-at arbitrary offsets. Consider how that might impact the way
-you manage file handles.
+此更改引入了在任意偏移量处从日志读取的需求。考虑这可能如何影响您管理文件句柄的方式。
 
-_If, in the previous steps, you elected to store the string values directly in
-memory, now is the time to update your code to store log pointers instead,
-loading from disk on demand._
+_如果在前几步中您选择直接在内存中存储字符串值，现在是时候更新您的代码，改为存储日志指针，并按需从磁盘加载了。_
 
 
-## Part 6: Stateless vs. stateful `KvStore`
+## 第 6 部分：无状态与有状态的 `KvStore`
 
-Remember that our project is both a library and a command-line program.
-They have sligtly different requirements: the `kvs` CLI commits a single change
-to disk, then exits (it is stateless); the `KvStore` type commits
-changes to disk, then stays resident in memory to service future
-queries (it is stateful).
+请记住，我们的项目既是库，也是命令行程序。它们的要求略有不同：`kvs` CLI 提交单个更改到磁盘，然后退出（它是无状态的）；`KvStore` 类型提交更改到磁盘，然后驻留在内存中以服务未来的查询（它是有状态的）。
 
-Is your `KvStore` stateful or stateless?
+您的 `KvStore` 是有状态的还是无状态的？
 
-_Make your `KvStore` retain the index in memory so it doesn't need to
-re-evaluate it for every call to `get`._
+_让您的 `KvStore` 在内存中保留索引，以便在每次调用 `get` 时无需重新评估它。_
 
 
-## Part 7: Compacting the log
+## 第 7 部分：压缩日志
 
-At this point the database works just fine, but the log grows indefinitely. That
-is appropriate for some databases, but not the one we're building &mdash; we
-want to minimize disk usage as much as we can.
+此时，数据库运行良好，但日志会无限增长。这对某些数据库是合适的，但对我们构建的数据库来说不是 —— 我们希望尽可能最小化磁盘使用。
 
-So the final step in creating your database is to compact the log. Consider
-that as the log grows that multiple entries may set the value of a given key.
-Consider also that only the most recent command that modified a given key has
-any effect on the current value of that key:
+因此，创建数据库的最后一步是压缩日志。考虑随着日志增长，多个条目可能设置给定键的值。同时，只有最近修改给定键的命令才对键的当前值有效：
 
-| idx | command |
+| 索引 | 命令 |
 |:---:|:--------|
 | 0 | ~Command::Set("key-1", "value-1a")~ |
 | 20 | Command::Set("key-2", "value-2") |
 | | ... |
 | 100 | Command::Set("key-1", "value-1b") |
 
-In this example obviously the command at index 0 is redundant, so it doesn't
-need to be stored. Log compaction then is about rebuilding the log to remove
-redundancy:
+在这个例子中，显然索引为 0 的命令是冗余的，因此不需要存储。日志压缩就是重建日志以移除冗余：
 
-| idx | command |
+| 索引 | 命令 |
 |:---:|:--------|
 | 0 | Command::Set("key-2", "value-2") |
 | | ... |
 | 99 | Command::Set("key-1", "value-1b") |
 
-Here's the basic algorithm you will use:
+以下是您将使用的基木算法：
 
-<!-- TODO: Think about this. should the algorithm be specified? what _is_ a
-good heuristic to rebuild the log? always rebuild the entire log? -->
+<!-- TODO: 思考一下。是否应指定算法？什么是重建日志的好启发式方法？总是重建整个日志吗？ -->
 
-_How_ you re-build the log is up to you. Consider questions like: what is the
-naive solution? How much memory do you need? What is the minimum amount of
-copying necessary to compact the log? Can the compaction be done in-place? How
-do you maintain data-integrity if compaction fails?
+_如何重建日志由您决定。考虑以下问题：朴素的解决方案是什么？您需要多少内存？压缩日志所需的最少复制量是多少？压缩能否原地进行？如果压缩失败，如何保持数据完整性？_
 
-So far we've been refering to "the log", but in actuallity it is common for a
-database to store many logs, in different files. You may find it easier to
-compact the log if you split your log across files.
+到目前为止，我们一直称其为“日志”，但实际上，数据库通常将日志存储在多个文件中。如果您将日志拆分到多个文件中，压缩日志可能会更容易。
 
-_Implement log compaction for your database._
+_为您的数据库实现日志压缩。_
 
-Congratulations! You have written a fully-functional database.
+恭喜！您已编写了一个功能完整的数据库。
 
-If you are curious, now is a good time to start comparing the performance of
-your key/value store to others, like [sled], [bitcask], [badger], or [RocksDB].
-You might enjoy investigating their architectures, thinking about how theirs
-compare to yours, and how architecture affects performance. The next few
-projects will give you opportunities to optimize.
+如果您好奇，现在是开始将您的键值存储性能与其他数据库（如 [sled]、[bitcask]、[badger] 或 [RocksDB]）进行比较的好时机。您可能会喜欢研究它们的架构，思考它们与您的架构的异同，以及架构如何影响性能。接下来的几个项目将为您提供优化的机会。
 
 [sled]: https://github.com/spacejam/sled
 [badger]: https://github.com/dgraph-io/badger
 [RocksDB]: https://rocksdb.org/
 
-Nice coding, friend. Enjoy a nice break.
+编码愉快，朋友。好好休息一下。
 
 
 <!--
 
-- Potential readings
-  - error handling https://github.com/rust-lang-nursery/rust-cookbook/issues/502#issue-387418261
+- 潜在阅读材料
+  - 错误处理 https://github.com/rust-lang-nursery/rust-cookbook/issues/502#issue-387418261
 
 ## TODOs
 
-- should flushing the log be part of the main project or an extension?
-- check terminology
-  - what's the correct term for the in-memory representation of the executed log?
-- is there a term for converting a log to it's permanent format?
-- custom main error handling
-- limits on k/v size?
-- maintaining data integrity on failure
-  - _must_ call flush at least
-- todo: `Result<Option<String>>` vs `Result<String>`
-  - is "not found" exit code 0 or !0?
-- error context
-- serialize directly to file stream
-- need readings for WAL
-- add code samples and digarams to illustrate the text and
-  be less monotonous
-- maintain the index file!
-- specify where data should be stored
-- caching the index
+- 刷新日志应作为主项目的一部分还是扩展？
+- 检查术语
+  - 执行日志的内存表示的正确术语是什么？
+- 是否有术语表示将日志转换为其永久格式？
+- 自定义主错误处理
+- k/v 大小限制？
+- 失败时保持数据完整性
+  - _必须_ 至少调用 flush
+- todo: `Result<Option<String>>` 与 `Result<String>`
+  - “未找到”退出码是 0 还是 !0？
+- 错误上下文
+- 直接序列化到文件流
+- 需要 WAL 的阅读材料
+- 添加代码示例和图表以说明文本，避免单调
+- 维护索引文件！
+- 指定数据应存储的位置
+- 缓存索引
 
 -->

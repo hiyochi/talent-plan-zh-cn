@@ -28,9 +28,9 @@ pub mod tests {
     use super::*;
 
     service! {
-        /// A simple test-purpose service.
+        /// 一个简单的测试用途的服务。
         service junk {
-            /// Doc comments.
+            /// 文档注释。
             rpc handler2(JunkArgs) returns (JunkReply);
             rpc handler3(JunkArgs) returns (JunkReply);
             rpc handler4(JunkArgs) returns (JunkReply);
@@ -38,7 +38,7 @@ pub mod tests {
     }
     use junk::{add_service, Client as JunkClient, Service as Junk};
 
-    // Hand-written protobuf messages.
+    // 手写的 protobuf 消息。
     #[derive(Clone, PartialEq, Message)]
     pub struct JunkArgs {
         #[prost(int64, tag = "1")]
@@ -213,7 +213,7 @@ pub mod tests {
         );
     }
 
-    // does net.Enable(endname, false) really disconnect a client?
+    // net.Enable(endname, false) 是否真的能断开客户端连接？
     #[test]
     fn test_disconnect() {
         init_logger();
@@ -236,7 +236,7 @@ pub mod tests {
         );
     }
 
-    // test net.GetCount()
+    // 测试 net.GetCount()
     #[test]
     fn test_count() {
         init_logger();
@@ -255,7 +255,7 @@ pub mod tests {
         assert_eq!(net.count("test_server"), 17);
     }
 
-    // test RPCs from concurrent Clients
+    // 测试来自并发客户端的 RPC
     #[test]
     fn test_concurrent_many() {
         init_logger();
@@ -343,7 +343,7 @@ pub mod tests {
         );
     }
 
-    // test concurrent RPCs from a single Client
+    // 测试来自单个客户端的并发 RPC
     #[test]
     fn test_concurrent_one() {
         init_logger();
@@ -391,8 +391,8 @@ pub mod tests {
         assert_eq!(n, total, "wrong count() {}, expected {}", n, total);
     }
 
-    // regression: an RPC that's delayed during Enabled=false
-    // should not delay subsequent RPCs (e.g. after Enabled=true).
+    // 回归测试：在 Enabled=false 期间延迟的 RPC
+    // 是否不应延迟后续的 RPC（例如，在 Enabled=true 之后）。
     #[test]
     fn test_regression1() {
         init_logger();
@@ -404,8 +404,8 @@ pub mod tests {
         let client = JunkClient::new(net.create_client(client_name.to_owned()));
         net.connect(client_name, server_name);
 
-        // start some RPCs while the Client is disabled.
-        // they'll be delayed.
+        // 在客户端被禁用时开始一些 RPC。
+        // 它们将被延迟。
         net.enable(client_name, false);
 
         let pool = ThreadPool::new().unwrap();
@@ -416,14 +416,13 @@ pub mod tests {
             let cli = client.clone();
             pool.spawn_ok(async move {
                 let x = i + 100;
-                // this call ought to return false.
+                // 这个调用应该返回 false。
                 let _ = cli.handler2(&JunkArgs { x });
                 sender.send(true).unwrap();
             });
         }
 
-        // FIXME: have to sleep 300ms to pass the test
-        //        in my computer (i5-4200U, 4 threads).
+        // FIXME: 在我的电脑（i5-4200U, 4 线程）上，必须休眠 300ms 才能通过测试
         thread::sleep(Duration::from_millis(100 * 3));
 
         let t0 = Instant::now();
@@ -453,9 +452,9 @@ pub mod tests {
         assert_eq!(n, 1, "wrong count() {}, expected 1", n);
     }
 
-    // if an RPC is stuck in a server, and the server
-    // is killed with DeleteServer(), does the RPC
-    // get un-stuck?
+    // 如果一个 RPC 在服务器中卡住了，并且服务器
+    // 被 DeleteServer() 杀死，这个 RPC
+    // 是否会被解除卡住状态？
     #[test]
     fn test_killed() {
         init_logger();

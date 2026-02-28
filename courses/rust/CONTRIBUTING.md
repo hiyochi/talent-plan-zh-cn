@@ -1,113 +1,76 @@
-# Contributing to PNA Rust
+# 为 PNA Rust 贡献代码
 
-Contributions of any kind are welcome.
+任何形式的贡献都欢迎。
 
-File bugs on the [issue tracker], no matter how small. If something in the
-course didn't make sense to you then it won't make sense to somebody else and
-needs to be fixed. That includes the language: this course is intended to be
-accessible to those with modest English-language comprehension. Non-technical
-words should be simple, and grammar should be easy to follow.
+请在 [问题追踪器] 上提交任何大小的 bug。如果课程中的某个内容让你感到困惑，那它也一定会让其他人感到困惑，因此需要修正。这包括语言本身：本课程旨在让英语水平有限的学习者也能轻松理解。非技术性词汇应尽量简单，语法应易于理解。
 
-General feedback and suggestions can be submitted to the issue tracker or to the
-#rust-training channel on the [TiKV Slack].
+一般性的反馈和建议可提交至问题追踪器，或发送至 [TiKV Slack] 的 #rust-training 频道。
 
-When you see something inconsistent or confusing, consider fixing it directly
-and sending a pull request.
+当你发现不一致或令人困惑的内容时，请直接修改并提交拉取请求（pull request）。
 
-For those looking for something to contribute, on the issue tracker, issues for
-the Rust course are tagged `p: rust`. The `help wanted` and `good first issue`
-tags may help you find something interesting.
+如果你正在寻找可贡献的内容，可以在问题追踪器中查找标记为 `p: rust` 的 Rust 课程相关问题。`help wanted` 和 `good first issue` 标签可以帮助你找到有趣且适合入门的任务。
 
 [issue tracker]: https://github.com/pingcap/talent-plan/issues/
 [TiKV Slack]: https://join.slack.com/t/tikv-wg/shared_invite/enQtNTUyODE4ODU2MzI0LWVlMWMzMDkyNWE5ZjY1ODAzMWUwZGVhNGNhYTc3MzJhYWE0Y2FjYjliYzY1OWJlYTc4OWVjZWM1NDkwN2QxNDE
 
-## Developing a new project
+## 开发新项目
 
-Each project expands the scope of the previous, and builds off of
-learnings from previous projects. Each project lends itself to being extended by
-the next section's project.
+每个项目都建立在前一个项目的基础上，并延续之前项目所学的知识。每个项目都自然地为下一节项目提供了扩展空间。
 
-When writing a project, look for steps where the design could be specified in
-multiple ways, where there are multiple solutions, where there is deeper
-understanding to be gained, and ask questions formulated to get the reader to
-think more deeply.
+编写项目时，请留意那些设计可以有多种方式实现、存在多种解决方案、能带来更深层次理解的地方，并提出能引导读者深入思考的问题。
 
-Projects should be written to take between 2 - 4 hours to implement.
+项目应设计为在 2 至 4 小时内完成。
 
-When writing a project, look for optional "extension" steps that teach
-additional practical subjects, but which either aren't necessary to complete the
-project or require more time and skill to implement. Extension steps usually go
-at the end of a project.
+编写项目时，应考虑加入可选的“扩展”步骤，这些步骤教授额外的实用内容，但要么不是完成项目所必需的，要么需要更多时间和技能才能实现。扩展步骤通常放在项目末尾。
 
-Project text doesn't link directly to documentation resources containing
-solutions - students should learn where to get the answers from the
-previous "building blocks" sections.
+项目文本不应直接链接到包含解决方案的文档资源——学生应从之前的“构建模块”部分学习如何自行寻找答案。
 
-Project text may include inline links to pages that offer explanatios of terms
-and concepts.
+项目文本中可包含内联链接，指向解释术语和概念的页面。
 
-Some subjects are revisited multiple times. In particular it is common for one
-project to introduce a subject with basic tasks, then the subsequent project to
-expand on that same subject with deeper tasks.
+某些主题会多次被回顾。通常，一个项目会以基础任务引入某个主题，而后续项目则在此基础上通过更深入的任务加以扩展。
 
+## 风格规范
 
-## Style notes
+“构建模块”页面通常以相同的鼓励性语句开头，而项目页面通常以相同的鼓励性语句结尾。
 
-Building blocks pages generally begin with the same encouraging phrase, and
-project pages generally end with the same encouraging phrase.
-
-Headers do not capitalize every word; words after a colon
-are capitalized:
+标题中不将每个单词首字母大写；冒号后的单词才大写：
 
 ```
-## Project spec
+## 项目规范
 
-## Lesson: Tools and good bones
+## 课程：工具与良好基础
 ```
 
-In projects, be clear on when the student should start hacking, and what they
-should be hacking, by writing an imperative statement. Format that command in
-italics:
+在项目中，应明确指出学生何时应开始动手实践，以及他们应修改什么内容，使用祈使句表达，并用斜体格式化该命令：
 
 ```
-_Try it now._
+_现在就试试。_
 ```
 
-If there are project extension sections, the first one is preceeded by a
-thematic break (`---`).
+如果项目包含扩展部分，第一个扩展部分前应使用主题分隔符（`---`）。
 
-For markdown readability headers are always preceeded by two line breaks.
+为提高 Markdown 的可读性，所有标题前均需保留两个空行。
 
-One-paragraph side-notes are in italics and preceeded with "Note:", like `_Note:
-whatever._`
+单段落的旁注使用斜体，并以“Note:”开头，例如：`_Note: 无论什么内容。_`
 
-Larger tangents that don't move the project forward are in their own sections,
-with their own headers, named "Aside: ...". They should be related to the
-subject matter and be interesting enough to justify the large detour.
+那些与项目主线无关但内容相关的较长延伸内容，应单独成节，并以“Aside: ...”为标题。这些内容应与主题相关，且足够有趣，足以证明这种偏离是合理的。
 
-Internal hyperlinks are relative to the current directory, not absolute.
+内部超链接应相对于当前目录，而非使用绝对路径。
 
-For building blocks exercises, if the description spans multiple paragraphs,
-begin the description in a paragraph separate from the exercise name:
+对于“构建模块”练习，若描述内容跨越多个段落，请将描述与练习名称分开放在独立段落中：
 
 ```
-- **Exercise: Write a thread pool**.
+- **练习：编写一个线程池**。
 
-  A [thread pool] runs jobs (functions) on a set of reusable threads, which can
-  be more efficient than spawning a new thread for every job.
+  一个 [线程池] 在一组可重用的线程上运行任务（函数），相比为每个任务都新建一个线程，这种方式通常更高效。
 
-  Create a simple thread pool with the following type signature:
+  创建一个具有以下类型签名的简单线程池：
 ```
 
+## 维护说明
 
-## Maintenace notes
+请确保 `plan.md` 和项目描述中的项目摘要（如 `**任务**`、`**目标**` 等文字）保持同步。
 
-Keep the project summary (the `**Task**`, `**Goals**`, etc. text) synced between
-plan.md and the project description.
+不属于项目或构建模块、也不属于标准顶层项目文件的新文档文件，请放入 `docs/` 目录下，以保持 GitHub 目录列表整洁，并确保渲染后的 README 位于“折叠线”之上。
 
-New documentation files that are not part of a project or building-blocks, and
-not part of standard top-level project files go in `docs/` to keep the GitHub
-directory listing clean, and keep the rendered README above "the fold".
-
-Miscellaneous files that are not part of the user-visible projcet live in
-`docs/etc`.
+不属于用户可见项目的杂项文件，请存放在 `docs/etc` 目录中。

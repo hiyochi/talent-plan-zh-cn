@@ -1,202 +1,202 @@
-## Project ideas
+## 项目创意
 
-Project maintainers and mentors, please submit the ideas below section using the template. Project ideas selected in season 1 will be listed in [Selected Projects](selected-projects.md) page
+项目维护者和导师，请使用以下模板提交下方的创意。入选第一季的项目将列在 [入选项目](selected-projects.md) 页面中。
 
-### Template
+### 模板
 
 ```
-#### TiDB Ecosystem Project Name
-##### Title
-- Description:
-- Recommended Skills:
-- Mentor(s):
-- Upstream Issue or RFC (URL):
+#### TiDB 生态系统项目名称
+##### 标题
+- 描述：
+- 推荐技能：
+- 导师：
+- 上游问题或 RFC（链接）：
 ```
 
-### Proposed Project ideas
+### 提出的项目创意
 
 #### BR
 
-##### BR HTTP Storage
-- Description: Support HTTP(S) server as source and destination for BR, and allow BR itself act as an authenticated HTTP(S) server to simplify deployment.
-- Recommended Skills: Go, Rust, HTTP communication, TLS handling.
-- Mentor(s): kennytm
-- Upstream Issue or RFC (URL): 
+##### BR HTTP 存储
+- 描述：支持将 HTTP(S) 服务器作为 BR 的数据源和目标，并允许 BR 自身作为经过身份验证的 HTTP(S) 服务器运行，以简化部署。
+- 推荐技能：Go、Rust、HTTP 通信、TLS 处理。
+- 导师：kennytm
+- 上游问题或 RFC（链接）：
    - https://github.com/pingcap/br/issues/308,
-    - https://github.com/pingcap/br/issues/212 
+   - https://github.com/pingcap/br/issues/212 
 
-##### BR Export
-- Description: Building on top of BR backup, implement an “export” function to produce CSV and SQL dump.
-- Recommended Skills: Rust, Go, Row encoding (MVCC and TiDB), gRPC.
-- Mentor(s): kennytm
-- Upstream Issue or RFC (URL): https://github.com/pingcap/br/issues/351 
+##### BR 导出
+- 描述：在 BR 备份功能基础上，实现“导出”功能，生成 CSV 和 SQL 转储文件。
+- 推荐技能：Rust、Go、行编码（MVCC 和 TiDB）、gRPC。
+- 导师：kennytm
+- 上游问题或 RFC（链接）：https://github.com/pingcap/br/issues/351 
 
 #### TiUP Bench
 
-##### Generate BR Backup Archive
-- Description: Currently TPC-C/TPC-H data prepared by tiup bench can either be inserted via SQL or dumped into CSV files for bulk ingestion. Both methods are slow compared with BR restore. In this project, we want to directly generate a BR backup archive, so benchmarks not caring about the prepare step could be ramped up quickly.
-- Recommended Skills: Go, Row encoding (TiDB), TiKV/RocksDB SST format
-- Mentor(s): kennytm
-- Upstream Issue or RFC (URL): https://github.com/pingcap/go-tpc/issues/46 
+##### 生成 BR 备份归档文件
+- 描述：目前通过 tiup bench 准备的 TPC-C/TPC-H 数据可通过 SQL 插入或导出为 CSV 文件进行批量导入。这两种方法都比 BR 恢复慢得多。本项目希望直接生成 BR 备份归档文件，以便不关心准备步骤的基准测试能快速启动。
+- 推荐技能：Go、行编码（TiDB）、TiKV/RocksDB SST 格式
+- 导师：kennytm
+- 上游问题或 RFC（链接）：https://github.com/pingcap/go-tpc/issues/46 
 
 #### TiCDC
 
-##### TiCDC Cloud Storage
-- Description: Some usage scenarios need to send the changed events to low-cost storage medium such as S3, in order to keep data for a long time and can consume historical changed events asynchronously. We should design and implement the storage strategy for TiCDC open protocol in cloud storage, and provide the consumption strategies based on the storage sketch in cloud storage.
-- Recommended Skills: Go, Cloud storage service.
-- Mentor(s): yangfei
-Upstream Issue or RFC (URL): https://github.com/pingcap/ticdc/issues/655
+##### TiCDC 云存储
+- 描述：某些使用场景需要将变更事件发送到低成本存储介质（如 S3），以便长期保存数据并异步消费历史变更事件。我们需要为 TiCDC 开放协议设计并实现云存储策略，并基于云存储架构提供消费策略。
+- 推荐技能：Go、云存储服务。
+- 导师：yangfei
+- 上游问题或 RFC（链接）：https://github.com/pingcap/ticdc/issues/655
 
-##### TiCDC Snapshot Level Consistency Replication
-* Description: In many scenarios users want to ensure the downstream is replicated to a globally consistent state, as TiCDC supports eventual transaction consistency, and TiDB supports snapshot read, we could combine these two features and provide a snapshot level consistency replication strategy.
-* Recommended Skills: Go, Transaction.
-* Mentor(s): yangfei
-* Upstream Issue or RFC (URL): https://github.com/pingcap/ticdc/issues/658
+##### TiCDC 快照级一致性复制
+- 描述：在许多场景中，用户希望确保下游复制到全局一致的状态。虽然 TiCDC 支持最终事务一致性，而 TiDB 支持快照读取，我们可以结合这两个特性，提供一种快照级一致性复制策略。
+- 推荐技能：Go、事务。
+- 导师：yangfei
+- 上游问题或 RFC（链接）：https://github.com/pingcap/ticdc/issues/658
 
-##### TiCDC New Mechanism for ResolvedTS
-* Description: TiCDC needs a timestamp (called ResolvedTS) in which we can ensure all transactions which start before this timestamp have completed and been sent from TiKV to TiCDC. For now, TiKV must advance the ResolvedTS in the leader of the Raft group. We require a new mechanism to eliminate this restriction.
-* Recommended Skills: Go, Rust, Raft
-* Mentor(s): tangminghua
-* Upstream Issue or RFC (URL): https://github.com/pingcap/ticdc/issues/657
+##### TiCDC 新的 ResolvedTS 机制
+- 描述：TiCDC 需要一个时间戳（称为 ResolvedTS），以确保所有在此时间戳之前开始的事务均已完成并从 TiKV 发送到 TiCDC。目前，TiKV 必须在 Raft 组的领导者节点上推进 ResolvedTS。我们需要一种新机制来消除这一限制。
+- 推荐技能：Go、Rust、Raft
+- 导师：tangminghua
+- 上游问题或 RFC（链接）：https://github.com/pingcap/ticdc/issues/657
 
-##### TiCDC Supports Avro Sink and Kafka Connector
-* Description: Apache Kafka provides a flexible connectors mechanism, which is widely used in change data capture scenarios. We want to implement an Avro sink and make TiCDC compatible with the Kafka connector ecosystem.
-* Recommended Skills: Go, Kafka.
-* Mentor(s): yangfei, liuzixiong
-* Upstream Issue or RFC (URL): https://github.com/pingcap/ticdc/issues/660
+##### TiCDC 支持 Avro Sink 和 Kafka Connector
+- 描述：Apache Kafka 提供了灵活的连接器机制，广泛应用于变更数据捕获场景。我们希望实现一个 Avro Sink，并使 TiCDC 兼容 Kafka 连接器生态系统。
+- 推荐技能：Go、Kafka。
+- 导师：yangfei, liuzixiong
+- 上游问题或 RFC（链接）：https://github.com/pingcap/ticdc/issues/660
 
-##### TiCDC Support a status mechanism for changefeed
-* Description: Various errors may be encountered during the execution of replication tasks (e.g. downstream link failure, incompatible DDLs, etc.). we hope to provide a mechanism so that users can quickly understand the status of the current replication task (normal or abnormal), and the reason for the error.
-* Recommended Skills: Go, SQL.
-* Mentor(s): zhaoyilin
-* Upstream Issue or RFC (URL): https://github.com/pingcap/ticdc/issues/664
+##### TiCDC 为 Changefeed 提供状态机制
+- 描述：在执行复制任务期间可能会遇到各种错误（例如下游连接失败、不兼容的 DDL 等）。我们希望提供一种机制，使用户能够快速了解当前复制任务的状态（正常或异常）以及错误原因。
+- 推荐技能：Go、SQL。
+- 导师：zhaoyilin
+- 上游问题或 RFC（链接）：https://github.com/pingcap/ticdc/issues/664
 
 #### PD
 
-##### PD Store & Region UI
-* Description: Add display and operation UI for PD stores and regions, in order to reduce the necessity of using pd-ctl and enhance user experience.
-* Recommended Skills: Go, Web Frontend.
-* Mentor(s): @HundunDM @breeswish
-* Upstream Issue or RFC (URL): https://docs.google.com/document/d/1moQVhvIgqu_FWuv_UMB76AM5tETJkyeWnzI04wyevhk/edit
+##### PD 存储与区域 UI
+- 描述：为 PD 存储和区域添加显示与操作界面，以减少对 pd-ctl 的依赖，提升用户体验。
+- 推荐技能：Go、Web 前端。
+- 导师：@HundunDM @breeswish
+- 上游问题或 RFC（链接）：https://docs.google.com/document/d/1moQVhvIgqu_FWuv_UMB76AM5tETJkyeWnzI04wyevhk/edit
 
-##### PD Encryption at rest
-* Description: Encryption at rest means that data is encrypted when it is stored, TiKV is already supported, but PD is not. PD stores the meta information of the cluster, especially the Key information of the Region, we need to encrypt it. Here it is proposed that PD also supports encryption.
-* Recommended Skills: Go, Cryptography
-* Mentor(s)：@yiwu-arbug
-* Upstream Issue or RFC (URL): 
+##### PD 静态数据加密
+- 描述：静态数据加密指数据在存储时即被加密。TiKV 已支持此功能，但 PD 尚未支持。PD 存储集群的元信息，特别是 Region 的 Key 信息，需要对其进行加密。本提案建议 PD 也支持加密功能。
+- 推荐技能：Go、密码学
+- 导师：@yiwu-arbug
+- 上游问题或 RFC（链接）：
 	* TiKV: https://github.com/tikv/rfcs/blob/929bf1f5d675b555c013d863599544afd9bfe812/text/2020-04-27-encryption-at-rest.md
-	* PD: WIP
+	* PD: 进行中
 
 #### TiDB
 
-##### Live Execution Plan
-* Description: Provide a way to query current execution details for running SQLs. This feature is similar to the Live Query Statistics in the SQL server. SQL server allows viewing the live execution plan for any queries.
-* Recommended Skills: Go, SQL
-* Mentor(s): @crazycs520 @breeswish @qw4990
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/17692
+##### 实时执行计划
+- 描述：提供一种查询正在运行 SQL 的实时执行详情的方式。此功能类似于 SQL Server 中的“实时查询统计”。SQL Server 允许查看任何查询的实时执行计划。
+- 推荐技能：Go、SQL
+- 导师：@crazycs520 @breeswish @qw4990
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/17692
 
-##### Print Txn ID and Query ID in log to trace the whole lifetime of a Txn / SQL
-* Description: TiDB now outputs TxnStartTs or ConnId in logs, which is not sufficient. This task is to allocate and print a unique TxnId for each transaction, as well as a unique QueryId for each query, for both TiDB and TiKV.
-* Recommended Skills: Go, Rust
-* Mentor(s): @crazycs520 @breeswish @SunRunAway
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/17845
+##### 在日志中打印事务 ID 和查询 ID 以追踪事务/SQL 的完整生命周期
+- 描述：目前 TiDB 在日志中输出的是 TxnStartTs 或 ConnId，信息不足。本任务旨在为每个事务分配并打印唯一的 TxnId，同时为每个查询分配并打印唯一的 QueryId，适用于 TiDB 和 TiKV。
+- 推荐技能：Go、Rust
+- 导师：@crazycs520 @breeswish @SunRunAway
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/17845
 
-##### Defining Placement Rules in SQL
-* Description: TiDB supports placement rules, but it can only be defined in configuration files. If there is an approach to configure placement rules through statements, usability can be improved. 
-* Recommended Skills: Go, Data Definition Language
-* Mentor(s): @djshow832
-* Upstream Issue or RFC (URL): 
+##### 在 SQL 中定义放置规则
+- 描述：TiDB 支持放置规则，但目前只能在配置文件中定义。如果能通过 SQL 语句配置放置规则，可显著提升可用性。
+- 推荐技能：Go、数据定义语言（DDL）
+- 导师：@djshow832
+- 上游问题或 RFC（链接）：
 	* https://github.com/pingcap/tidb/issues/18030
 	* https://docs.google.com/document/d/18Kdhi90dv33muF9k_VAIccNLeGf-DdQyUc8JlWF9Gok/edit#
 
-##### Support Multiple Tables Rename in A Statement
-* Description: TiDB supports renaming one table but doesn’t support renaming multiple tables. This task wants to support renaming multiple tables in a statement.
-* Recommended Skills: Go, DDL
-* Mentor(s): @zimulala
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/14766
+##### 支持在单条语句中重命名多个表
+- 描述：TiDB 目前支持重命名单个表，但不支持一次重命名多个表。本任务希望支持在一条语句中重命名多个表。
+- 推荐技能：Go、DDL
+- 导师：@zimulala
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/14766
 
-##### Support the operation of dropping multi-indexes in a statement
-* Description: This task wants to support the operation of dropping multi-indexes in a statement.
-* Recommended Skills: Go, DDL
-* Mentor(s): @zimulala
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/14765
+##### 支持在单条语句中删除多个索引
+- 描述：本任务希望支持在一条语句中删除多个索引。
+- 推荐技能：Go、DDL
+- 导师：@zimulala
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/14765
 
-##### Dropping column with index covered
-* Description: Support the operation of deleting columns containing indexes.
-* Recommended Skills: Go, DDL
-* Mentor(s): @zimulala
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/3364
+##### 删除包含索引的列
+- 描述：支持删除包含索引的列的操作。
+- 推荐技能：Go、DDL
+- 导师：@zimulala
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/3364
 
-##### Support SAVEPOINT in TiDB
-* Description: SAVEPOINT is a feature basically supported by mainstream traditional databases (Oracle, DB2, MySQL, and PostgreSQL), and its role is to partially roll back multiple statements of the transaction being executed. TiDB does not currently support this feature.
-* Recommended Skills: Go
-* Mentor(s): @bobotu
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/6840
+##### 在 TiDB 中支持 SAVEPOINT
+- 描述：SAVEPOINT 是主流传统数据库（如 Oracle、DB2、MySQL 和 PostgreSQL）普遍支持的功能，其作用是在执行事务时实现部分回滚。TiDB 目前尚不支持此功能。
+- 推荐技能：Go
+- 导师：@bobotu
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/6840
 
-##### Support LIST COLUMNS partitioning
-* Description: LIST COLUMNS partitioning is a feature basically supported by MySQL 8.0, and its role is to define table partition with list columns. TiDB does not currently support this feature.
-* Recommended Skills: Go, DDL, SQL
-* Mentor(s): @imtbkcat
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/18052
+##### 支持 LIST COLUMNS 分区
+- 描述：LIST COLUMNS 分区是 MySQL 8.0 普遍支持的功能，用于通过列表列定义表分区。TiDB 目前尚不支持此功能。
+- 推荐技能：Go、DDL、SQL
+- 导师：@imtbkcat
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/18052
 
-##### Support Global Index for Partition Table
-* Description: Currently TiDB only supports local partitioned indexes that compatible with mysql，but other database(e.g. Oracle) also supports global partitioned indexes
-* Recommended Skills: Go, DDL, SQL
-* Mentor(s): @tiancaiamao
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/18032
+##### 支持分区表的全局索引
+- 描述：目前 TiDB 仅支持与 MySQL 兼容的本地分区索引，但其他数据库（如 Oracle）也支持全局分区索引。
+- 推荐技能：Go、DDL、SQL
+- 导师：@tiancaiamao
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/18032
 
-##### Implement Join Order Hint
-* Description: Provide a comment style SQL hint to specify the order of joins in the query.
-* Recommended Skills: Go, SQL
-* Mentor(s): @eurekaka
-* Upstream Issue or RFC (URL): WIP
+##### 实现连接顺序提示（Join Order Hint）
+- 描述：提供一种注释风格的 SQL 提示，用于指定查询中连接的顺序。
+- 推荐技能：Go、SQL
+- 导师：@eurekaka
+- 上游问题或 RFC（链接）：进行中
 
-##### Reduce memory consumption of stats data
-* Description: When there're lots of tables in a TiDB cluster, caching all the stats data into a single TiDB server may cause a high memory consumption when the TiDB server bootstrapped. It increases the OOM risk of the TiDB server.
-* Recommended Skills: Go
-* Mentor(s): @SunRunAway
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/16572
+##### 减少统计信息数据的内存消耗
+- 描述：当 TiDB 集群中存在大量表时，在 TiDB 服务器启动时将所有统计信息缓存到单个 TiDB 服务器中可能导致内存消耗过高，增加 OOM 风险。
+- 推荐技能：Go
+- 导师：@SunRunAway
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/16572
 
-##### Reduce memory consumption of table meta
-* Description: TiDB always loads all tables in all schema at once in bootstrap, which can consume very much memory. It increases the OOM risk of the TiDB server.
-* Recommended Skills: Go
-* Mentor(s): @bb7133, @SunRunAway
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/16572
+##### 减少表元数据的内存消耗
+- 描述：TiDB 在启动时会一次性加载所有 Schema 中的所有表，这会消耗大量内存，增加 TiDB 服务器的 OOM 风险。
+- 推荐技能：Go
+- 导师：@bb7133, @SunRunAway
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/16572
 
-##### Support utf8_unicode_ci/utf8mb4_unicode_ci collation
-* Description: Implement the utf8_unicode_ci/utf8mb4_unicode_ci collation algorithm and optimize them.
-* Recommended Skills: Go
-* Mentor(s): @wjhuang2016
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/17596
+##### 支持 utf8_unicode_ci / utf8mb4_unicode_ci 排序规则
+- 描述：实现 utf8_unicode_ci / utf8mb4_unicode_ci 排序规则算法并对其进行优化。
+- 推荐技能：Go
+- 导师：@wjhuang2016
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/17596
 
-##### Implement More Diagnostics Rules 
-* Description: Add more diagnose rule in TiDB SQL diagnose. 
-* Recommended Skills: Go, SQL
-* Mentor(s): @crazycs520
-* Upstream Issue or RFC (URL): https://github.com/pingcap/tidb/issues/17927
+##### 实现更多诊断规则
+- 描述：在 TiDB SQL 诊断中增加更多诊断规则。
+- 推荐技能：Go、SQL
+- 导师：@crazycs520
+- 上游问题或 RFC（链接）：https://github.com/pingcap/tidb/issues/17927
 
 #### TiKV
 
-##### Witness
-* Description: support raft witness role, and use it in the dual data center deployment scenario, TiDB can still provide service no matter which one of the data center crash
-* Recommended Skills: Rust, Raft
-* Mentor(s): @busyjay
-* Upstream Issue or RFC(URL): WIP
+##### Witness（见证节点）
+- 描述：支持 Raft 见证节点角色，并在双数据中心部署场景中使用，即使其中一个数据中心崩溃，TiDB 仍能继续提供服务。
+- 推荐技能：Rust、Raft
+- 导师：@busyjay
+- 上游问题或 RFC（链接）：进行中
 
-##### Loose Follower Read
-* Description: Provide a way to read follower doesn’t need to send a request to the leader
-* Recommended Skills: Rust, Raft
-* Mentor(s): @hicqu
-* Upstream Issue or RFC (URL): WIP
+##### 松散的跟随者读取（Loose Follower Read）
+- 描述：提供一种无需向领导者发送请求即可从跟随者读取数据的方式。
+- 推荐技能：Rust、Raft
+- 导师：@hicqu
+- 上游问题或 RFC（链接）：进行中
 
-##### Write flow control
-* Description: Control the writing flow by requests' latency, and make the writing smoothly
-* Recommended Skills: Rust
-* Mentor(s): @Conner1996
-* Upstream Issue or RFC (URL): https://docs.google.com/document/d/1rgm4rS2youwJpy_zpC39BJgxPpnwk7DeuF5LjvWrBZ8/edit#
+##### 写入流量控制
+- 描述：根据请求的延迟控制写入流量，使写入过程更加平稳。
+- 推荐技能：Rust
+- 导师：@Conner1996
+- 上游问题或 RFC（链接）：https://docs.google.com/document/d/1rgm4rS2youwJpy_zpC39BJgxPpnwk7DeuF5LjvWrBZ8/edit#
 
-##### SQL Statement Level Statistics
-* Description: To make it possible to know what statement is the root cause of hot regions, we need to add local statistics to TiKV that counts top K hot statements and then reports them to PD.
-* Recommended Skills: Rust, Go
-* Mentor(s): @breeswish @HundunDM
-* Upstream Issue or RFC (URL): https://github.com/pingcap-incubator/tidb-dashboard/issues/574
+##### SQL 语句级别统计
+- 描述：为了识别导致热点 Region 的具体语句，我们需要在 TiKV 中添加本地统计功能，统计前 K 个热点语句，并将结果上报给 PD。
+- 推荐技能：Rust、Go
+- 导师：@breeswish @HundunDM
+- 上游问题或 RFC（链接）：https://github.com/pingcap-incubator/tidb-dashboard/issues/574

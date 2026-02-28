@@ -1,51 +1,38 @@
-# Distributed Systems in Rust
+# Rust 中的分布式系统
 
-A training course about the distributed systems in [Rust].
+本课程是关于在 [Rust] 中实现分布式系统的培训课程。
 
-Subjects covered include:
+涵盖的主题包括：
 
-- [Raft consensus algorithm] (including a fault-tolerant key-value storage service
-using Raft)
-- [Percolator transaction model]
+- [Raft 一致性算法]（包括基于 Raft 构建的容错键值存储服务）
+- [Percolator 事务模型]
 
-After completing this course you will have the knowledge to implement a basic
-key-value storage service with transaction and fault-tolerant in Rust.
+完成本课程后，您将具备在 Rust 中实现具有事务支持和容错能力的简易键值存储服务所需的知识。
 
-**Important note: Distributed Systems in Rust is in an alpha state**
-It might contain bugs. Any feedback is greatly appreciated. Please [file issues]
-if you have any problem. And also You are encouraged to fix problems on your own
-and submit pull requests.
+**重要提示：Rust 中的分布式系统目前处于 Alpha 阶段**  
+可能存在一些 Bug。我们非常欢迎您提供反馈！如遇任何问题，请[提交 Issue]。同时，我们也鼓励您自行修复问题并提交 Pull Request。
 
-## The goal of this course
+## 本课程的目标
 
-The goal of this course is to teach the Rust programmers who are interested in
-distributed systems to know about how to make the distributed systems reliable
-and how to implement the distributed transaction.
+本课程旨在帮助对分布式系统感兴趣的 Rust 程序员，了解如何构建可靠的分布式系统，以及如何实现分布式事务。
 
-## Who is this for?
+## 适合谁？
 
-Distributed Systems in Rust is for experienced _Rust_ programmers, who are
-familiar with the Rust language. If you are not, you can first learn our [rust]
-lessons.
+本课程面向具备丰富经验的 _Rust_ 程序员，要求您已熟悉 Rust 语言。如果您尚未掌握 Rust，建议先学习我们的 [rust] 课程。
 
-## A PingCAP-specific note
+## PingCAP 特别说明
 
-This course, combined with [Deep Dive TiKV], is intended to be enough to enable
-programmers to meaningfully contribute to [TiKV]. It is most specifically
-designed to teach those in the Chinese Rust community enough Rust to work on
-TiKV. The language used is intended to be simple so that those who read only a
-little English can follow. If you find any of the language difficult to
-understand please [file issues].
+本课程与 [Deep Dive TiKV] 结合使用，足以使程序员能够对 [TiKV] 项目做出有意义的贡献。本课程特别为中文 Rust 社区设计，旨在帮助他们掌握足够多的 Rust 知识以参与 TiKV 开发。课程语言力求简洁，以便英语阅读能力有限的学习者也能顺利理解。如您发现任何语言表达难以理解，请[提交 Issue]。
 
-## License
+## 许可证
 
 [CC-BY 4.0](https://opendefinition.org/licenses/cc-by/)
 
-<!-- links -->
+<!-- 链接 -->
 [rust]: ../rust/README.md
 [file issues]: https://github.com/pingcap/talent-plan/issues/
 [Deep Dive TiKV]: https://tikv.github.io/deep-dive-tikv/overview/introduction.html
 [TiKV]: https://github.com/tikv/tikv/
 [Rust]: https://www.rust-lang.org/
-[Raft consensus algorithm]: raft/README.md
-[Percolator transaction model]: percolator/README.md
+[Raft 一致性算法]: raft/README.md
+[Percolator 事务模型]: percolator/README.md

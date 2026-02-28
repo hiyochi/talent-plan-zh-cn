@@ -1,24 +1,23 @@
-# Contributing Guide
+# 贡献指南
 
-Thanks for taking the time to contribute to Talent Plan! Contributions of any kind are welcome.
+感谢您抽出时间贡献于 Talent Plan！任何形式的贡献都欢迎。
 
-## Ways to contribute
+## 贡献方式
 
-We love contributions from the community. Here are just a few of the ways you can contribute:
+我们非常欢迎社区的贡献。以下是一些您可以贡献的方式：
 
-- **Report bugs:** if you find a bug while taking courses, you may want to do a quick check of past issues to see if you can find any help there. Otherwise, create a new bug issue in the course repository using the provided template.
-- **Answer questions:** check out the open issues to see if you can help answer learner questions.
-- **Suggest changes:** this could come in the form of a new learning outcome, updates to the content, updates to the bot responses, or the logic of the course. If you'd like, you can fork the course and suggest the change that way, but most people like to talk about it first in an issue.
-- **Tackle an issue:** if you see an issue you would like to resolve, please feel free to fork the course and submit a PR (check out the instructions below).
-- **Translate a course:** if you have the ability to translate a course, we'd love to see it. Please fork the course and submit a PR. We'll need a second native speaker to confirm the translation so if you have anyone in mind, please @ mention them in your PR for a review.
+- **报告缺陷：** 在学习课程时发现缺陷，请先检查已有问题以查看是否有相关帮助。否则，请使用提供的模板在课程仓库中创建新的缺陷问题。
+- **回答问题：** 查看开放的问题，看看是否能帮助解答学习者的问题。
+- **建议修改：** 可以是新的学习目标、内容更新、机器人回复更新或课程逻辑调整。如果您愿意，可以分叉课程并以这种方式提出修改，但大多数人更倾向于先在问题中讨论。
+- **处理问题：** 如果您看到想解决的问题，请随时分叉课程并提交拉取请求（请查看下方说明）。
+- **翻译课程：** 如果您有能力翻译课程，我们非常欢迎。请分叉课程并提交拉取请求。我们需要另一位母语者确认翻译，因此如果您有合适的人选，请在PR中@提及他们以进行审核。
 
+## 如何贡献
 
-## How to Contribute
+1. 确定您愿意参与的[贡献方式](#ways-to-contribute)
+1. 分叉此仓库。
+2. 将您的更改提交到您的分支
+3. 向上游发起拉取请求
+4. 请求评审人员进行审核
 
-1. Check out which [contributions](#ways-to-contribute) above you are willing to make
-1. Fork this repository.
-2. Commit your changes to your branch
-3. Open a pull request to upstream
-4. Request a review from the reviewers
-
-Want to konw more about how to use Git & GitHub to make contributions? Click [how to use Git & GitHub](courses/tp102-how-to-use-git-github.md) courses for more help
+想了解更多关于如何使用 Git & GitHub 进行贡献的信息？点击 [how to use Git & GitHub](courses/tp102-how-to-use-git-github.md) 课程以获取更多帮助

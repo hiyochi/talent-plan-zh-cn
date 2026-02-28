@@ -1,43 +1,30 @@
-## Project ideas
+## TiDB 生态系统项目名称
 
-Project maintainers and mentors, please submit the ideas below section using the template. Project ideas selected in season 1 will be listed in [Selected Projects](selected-projects.md) page
+## 标题
 
-### Template
+## 描述
 
-```
-## TiDB Ecosystem Project Name
+问题是什么？如何解决？
 
-## Title
+## 文档集合
 
-## Description
+- 提案文档：${提案文档链接}
+- 周报：${周报链接}
 
-what's the problem, how to solve it
+## 人才挑战计划信息
 
-## Document Collection
+- 本项目导师：@github_id
+- 推荐技能：${技能列表及链接}
+- 预估工作量：（XL，人月）
 
-- Proposal doc: ${proposal doc}
-- Weekly report: ${weekly report link}
+## 里程碑与行动项
 
-## Talent Challenge Program information
+里程碑 1：${里程碑描述}，预计完成日期：${日期}
 
-- Mentor of this issue: @github_id
-- Recommended skills: ${skills and URL link}
-- Estimated Workloads: (XL, man-month)
+- [ ] 行动项 1
+- [ ] 行动项 2
 
-## Milestones and action items
+里程碑 2：${里程碑描述}，预计完成日期：${日期}
 
-Milestone 1: ${milestone descption}, Expected finish date: ${date}
-
-- [ ] action item 1
-- [ ] action item 2
-
-Milestone 2: ${milestone descption}, Expected finish date: ${date}
-
-- [ ] action item 1
-- [ ] action item 2
-
-```
-
-### Proposed Project ideas
-
-
+- [ ] 行动项 1
+- [ ] 行动项 2

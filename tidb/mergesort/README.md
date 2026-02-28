@@ -1,37 +1,31 @@
-## Introduction
+## 简介
 
-This is the Merge Sort home work for PingCAP Talent Plan Online of week 1.
+这是 PingCAP Talent Plan Online 第一周的归并排序作业。
 
-There are 16, 000, 000 int64 values stored in an unordered array. Please
-supplement the `MergeSort()` function defined in `mergesort.go` to sort this
-array.
+有一个包含 16,000,000 个 int64 值的无序数组。请补充 `mergesort.go` 中定义的 `MergeSort()` 函数，以对该数组进行排序。
 
-Requirements and rating principles:
-* (30%) Pass the unit test.
-* (20%) Performs better than `sort.Slice()`.
-* (40%) Have a document to describe your idea and record the process of performance optimization with `pprof`.
-* (10%) Have a good code style.
+要求与评分标准：
+* （30%）通过单元测试。
+* （20%）性能优于 `sort.Slice()`。
+* （40%）提供一份文档，描述你的思路，并记录使用 `pprof` 进行性能优化的过程。
+* （10%）代码风格良好。
 
-NOTE: **go 1.12 is required**
+注意：**需要使用 go 1.12**
 
-## How to use
+## 使用方法
 
-Please supplement the `MergeSort()` function defined in `mergesort.go` to accomplish
-the home work.
+请补充 `mergesort.go` 中定义的 `MergeSort()` 函数，以完成本次作业。
 
-**NOTE**:
-1. There is a builtin unit test defined in `mergesort_test.go`, however, you still
-   can write your own unit tests.
-2. There is a builtin benchmark test defined in `bench_test.go`, you should run
-   this benchmark to ensure that your parallel merge sort is fast enough.
+**注意**：
+1. `mergesort_test.go` 中已内置单元测试，但你仍可编写自己的单元测试。
+2. `bench_test.go` 中已内置基准测试，你需要运行该基准测试，以确保你的并行归并排序足够快。
 
-
-How to test:
+如何测试：
 ```
 make test
 ```
 
-How to benchmark:
+如何运行基准测试：
 ```
 make bench
 ```

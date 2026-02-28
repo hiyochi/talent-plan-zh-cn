@@ -1,3 +1,4 @@
+```rust
 use assert_cmd::prelude::*;
 use predicates::str::{contains, is_empty};
 use std::fs::{self, File};
@@ -7,7 +8,7 @@ use std::thread;
 use std::time::Duration;
 use tempfile::TempDir;
 
-// `kvs-client` with no args should exit with a non-zero code.
+// `kvs-client` 不带参数时应以非零退出码退出。
 #[test]
 fn client_cli_no_args() {
     let temp_dir = TempDir::new().unwrap();
@@ -129,7 +130,7 @@ fn client_cli_invalid_subcommand() {
         .failure();
 }
 
-// `kvs-client -V` should print the version
+// `kvs-client -V` 应打印版本信息
 #[test]
 fn client_cli_version() {
     let temp_dir = TempDir::new().unwrap();
@@ -140,7 +141,7 @@ fn client_cli_version() {
         .stdout(contains(env!("CARGO_PKG_VERSION")));
 }
 
-// `kvs-server -V` should print the version
+// `kvs-server -V` 应打印版本信息
 #[test]
 fn server_cli_version() {
     let temp_dir = TempDir::new().unwrap();
@@ -173,7 +174,7 @@ fn cli_log_configuration() {
 
 #[test]
 fn cli_wrong_engine() {
-    // sled first, kvs second
+    // 先使用 sled，再使用 kvs
     {
         let temp_dir = TempDir::new().unwrap();
         let mut cmd = Command::cargo_bin("kvs-server").unwrap();
@@ -192,7 +193,7 @@ fn cli_wrong_engine() {
             .failure();
     }
 
-    // kvs first, sled second
+    // 先使用 kvs，再使用 sled
     {
         let temp_dir = TempDir::new().unwrap();
         let mut cmd = Command::cargo_bin("kvs-server").unwrap();
@@ -222,7 +223,7 @@ fn cli_access_server(engine: &str, addr: &str) {
         .spawn()
         .unwrap();
     let handle = thread::spawn(move || {
-        let _ = receiver.recv(); // wait for main thread to finish
+        let _ = receiver.recv(); // 等待主线程完成
         child.kill().expect("server exited before killed");
     });
     thread::sleep(Duration::from_secs(1));
@@ -294,7 +295,7 @@ fn cli_access_server(engine: &str, addr: &str) {
     sender.send(()).unwrap();
     handle.join().unwrap();
 
-    // Reopen and check value
+    // 重新启动并检查值
     let (sender, receiver) = mpsc::sync_channel(0);
     let mut server = Command::cargo_bin("kvs-server").unwrap();
     let mut child = server
@@ -303,7 +304,7 @@ fn cli_access_server(engine: &str, addr: &str) {
         .spawn()
         .unwrap();
     let handle = thread::spawn(move || {
-        let _ = receiver.recv(); // wait for main thread to finish
+        let _ = receiver.recv(); // 等待主线程完成
         child.kill().expect("server exited before killed");
     });
     thread::sleep(Duration::from_secs(1));
@@ -335,3 +336,4 @@ fn cli_access_server_kvs_engine() {
 fn cli_access_server_sled_engine() {
     cli_access_server("sled", "127.0.0.1:4005");
 }
+```

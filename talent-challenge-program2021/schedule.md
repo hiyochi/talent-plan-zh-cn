@@ -1,46 +1,46 @@
-# Talent Challenge Program 2021 Schedule
+# 2021 年人才挑战计划日程
 
-_Status: ongoing_
+_状态：进行中_
 
-### Timeline
-_Note: this timeline is proposed and may be subject to change before the formal program launch announcement_
+### 时间安排  
+_注意：此时间表为建议版本，正式计划发布前可能有所调整_
 
-#### Season 1
+#### 第一季
 
-- June 15 - July 15: mentees applications opened, projects are selecting mentees;
-- July 19 - mentees are selected by the mentors, coding starts;
-- 1st evaluation checkpoint (mentor decides);
-    - Mentors verify the quality of the completed tasks;
-    - First 50% of the stipend is being paid to the mentee if this stage is passed;
-- 2nd (final) evaluation checkpoint (mentor decides);
-    - Coding ends;
-    - The other 50% of the stipend is being paid to the mentees;
-    - results announced!
+- 6 月 15 日 - 7 月 15 日：学员申请开放，项目方筛选学员；
+- 7 月 19 日起：学员由导师选定，编码工作启动；
+- 第一阶段评估节点（由导师决定）：
+    - 导师审核已完成任务的质量；
+    - 若通过此阶段，学员将获得津贴的前 50%；
+- 第二阶段（最终）评估节点（由导师决定）：
+    - 编码工作结束；
+    - 学员获得剩余 50% 的津贴；
+    - 公布最终结果！
 
-#### Season 2
+#### 第二季
 
-- Sep 01 - Sep 15: mentees applications opened, projects are selecting mentees;
-- Sep 20 - mentees are selected by the mentors, coding starts;
-- 1st evaluation checkpoint (mentor decides);
-    - Mentors verify the quality of the completed tasks;
-    - First 50% of the stipend is being paid to the mentee if this stage is passed;
-- 2nd (final) evaluation checkpoint (mentor decides);
-    - Coding ends;
-    - The other 50% of the stipend is being paid to the mentees;
-    - results announced!
+- 9 月 1 日 - 9 月 15 日：学员申请开放，项目方筛选学员；
+- 9 月 20 日起：学员由导师选定，编码工作启动；
+- 第一阶段评估节点（由导师决定）：
+    - 导师审核已完成任务的质量；
+    - 若通过此阶段，学员将获得津贴的前 50%；
+- 第二阶段（最终）评估节点（由导师决定）：
+    - 编码工作结束；
+    - 学员获得剩余 50% 的津贴；
+    - 公布最终结果！
 
-#### Season 3
+#### 第三季
 
-- Nov 01 - Nov 15: mentees applications opened, projects are selecting mentees;
-- Nov 18 - mentees are selected by the mentors, coding starts;
-- 1st evaluation checkpoint (mentor decides);
-    - Mentors verify the quality of the completed tasks;
-    - First 50% of the stipend is being paid to the mentee if this stage is passed;
-- 2nd (final) evaluation checkpoint (mentor decides);
-    - Coding ends;
-    - The other 50% of the stipend is being paid to the mentees;
-    - results announced!
+- 11 月 1 日 - 11 月 15 日：学员申请开放，项目方筛选学员；
+- 11 月 18 日起：学员由导师选定，编码工作启动；
+- 第一阶段评估节点（由导师决定）：
+    - 导师审核已完成任务的质量；
+    - 若通过此阶段，学员将获得津贴的前 50%；
+- 第二阶段（最终）评估节点（由导师决定）：
+    - 编码工作结束；
+    - 学员获得剩余 50% 的津贴；
+    - 公布最终结果！
 
-### Selected Projects
+### 已入选项目
 
-Selected projects are listed on the [Selected Projects](selected-projects.md) page
+已入选项目详见 [已入选项目](selected-projects.md) 页面

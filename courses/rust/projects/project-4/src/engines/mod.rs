@@ -5,22 +5,22 @@ use crate::Result;
 mod kvs;
 mod sled;
 
-/// Trait for a key value storage engine.
+/// 键值存储引擎的 trait。
 pub trait KvsEngine: Clone + Send + 'static {
-    /// Sets the value of a string key to a string.
+    /// 将字符串键的值设置为字符串。
     ///
-    /// If the key already exists, the previous value will be overwritten.
+    /// 如果键已存在，则会覆盖之前的值。
     fn set(&self, key: String, value: String) -> Result<()>;
 
-    /// Gets the string value of a given string key.
+    /// 获取给定字符串键的字符串值。
     ///
-    /// Returns `None` if the given key does not exist.
+    /// 如果给定的键不存在，则返回 `None`。
     fn get(&self, key: String) -> Result<Option<String>>;
 
-    /// Removes a given key.
+    /// 删除给定的键。
     ///
-    /// # Errors
+    /// # 错误
     ///
-    /// It returns `KvsError::KeyNotFound` if the given key is not found.
+    /// 如果未找到给定的键，则返回 `KvsError::KeyNotFound`。
     fn remove(&self, key: String) -> Result<()>;
 }

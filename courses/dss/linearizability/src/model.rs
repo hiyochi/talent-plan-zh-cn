@@ -1,3 +1,4 @@
+```rust
 use std::cmp::PartialEq;
 use std::fmt::Debug;
 use std::fmt::Display;
@@ -31,9 +32,9 @@ impl<I: Debug, O: Debug> Value<I, O> {
 #[derive(Debug)]
 pub struct Operation<I: Debug, O: Debug> {
     pub input: I,
-    pub call: i64, // invocation time
+    pub call: i64, // 调用时间
     pub output: O,
-    pub finish: i64, // response time
+    pub finish: i64, // 响应时间
 }
 
 pub enum EventKind {
@@ -55,10 +56,8 @@ pub trait Model: Clone + Send + 'static {
     type Input: Send + Debug + 'static;
     type Output: Send + Debug + 'static;
 
-    // Partition functions, such that a history is linearizable if an only
-    // if each partition is linearizable. If you don't want to implement
-    // this, you can always use the `NoPartition` functions implemented
-    // below.
+    // 分区函数，使得历史记录可线性化当且仅当每个分区可线性化。如果你不想实现这个，
+    // 可以使用下面实现的 `NoPartition` 函数。
     fn partition(
         &self,
         history: Operations<Self::Input, Self::Output>,
@@ -73,12 +72,11 @@ pub trait Model: Clone + Send + 'static {
         vec![history]
     }
 
-    // Initial state of the system.
+    // 系统的初始状态。
     fn init(&self) -> Self::State;
 
-    // Step function for the system. Returns whether or not the system
-    // could take this step with the given inputs and outputs and also
-    // returns the new state. This should not mutate the existing state.
+    // 系统的步进函数。返回系统是否可以使用给定的输入和输出执行此步骤，
+    // 并返回新状态。这不应改变现有状态。
     fn step(
         &self,
         state: &Self::State,
@@ -86,9 +84,10 @@ pub trait Model: Clone + Send + 'static {
         output: &Self::Output,
     ) -> (bool, Self::State);
 
-    // Equality on states. If you are using a simple data type for states,
-    // you can use the `ShallowEqual` function implemented below.
+    // 状态上的相等性。如果你为状态使用简单的数据类型，
+    // 可以使用下面实现的 `ShallowEqual` 函数。
     fn equal(&self, state1: &Self::State, state2: &Self::State) -> bool {
         state1 == state2
     }
 }
+```

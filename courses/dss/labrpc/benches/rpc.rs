@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+使用 std::sync::{Arc, Mutex};
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use futures::executor::block_on;
@@ -7,15 +7,15 @@ use prost_derive::Message;
 use labrpc::{service, Network, Result, Server, ServerBuilder};
 
 service! {
-    /// A simple bench-purpose service.
+    /// 一个简单的基准测试用途服务。
     service bench {
-        /// Doc comments.
+        /// 文档注释。
         rpc handler(BenchArgs) returns (BenchReply);
     }
 }
 use bench::{add_service, Client as BenchClient, Service};
 
-// Hand-written protobuf messages.
+// 手动编写的 protobuf 消息。
 #[derive(Clone, PartialEq, Message)]
 pub struct BenchArgs {
     #[prost(int64, tag = "1")]
@@ -79,7 +79,7 @@ fn bench_rpc(c: &mut Criterion) {
                 client.handler(&BenchArgs { x: 111 }).await.unwrap()
             }));
         })
-        // i7-8650U, 13 microseconds per RPC
+        // i7-8650U, 每次 RPC 13 微秒
     });
 }
 

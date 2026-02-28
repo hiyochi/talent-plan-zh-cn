@@ -69,7 +69,7 @@ fn run(opt: Opt) -> Result<()> {
     info!("Storage engine: {}", engine);
     info!("Listening on {}", opt.addr);
 
-    // write engine to engine file
+    // 将引擎写入 engine 文件
     fs::write(current_dir()?.join("engine"), format!("{}", engine))?;
 
     let pool = RayonThreadPool::new(num_cpus::get() as u32)?;

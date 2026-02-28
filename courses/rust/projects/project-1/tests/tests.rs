@@ -3,13 +3,13 @@ use kvs::KvStore;
 use predicates::str::contains;
 use std::process::Command;
 
-// `kvs` with no args should exit with a non-zero code.
+// 不带参数的 `kvs` 应该以非零代码退出。
 #[test]
 fn cli_no_args() {
     Command::cargo_bin("kvs").unwrap().assert().failure();
 }
 
-// `kvs -V` should print the version
+// `kvs -V` 应该打印版本号
 #[test]
 fn cli_version() {
     Command::cargo_bin("kvs")
@@ -19,7 +19,7 @@ fn cli_version() {
         .stdout(contains(env!("CARGO_PKG_VERSION")));
 }
 
-// `kvs get <KEY>` should print "unimplemented" to stderr and exit with non-zero code
+// `kvs get <KEY>` 应该在 stderr 中打印 "unimplemented" 并以非零代码退出
 #[test]
 fn cli_get() {
     Command::cargo_bin("kvs")
@@ -30,7 +30,7 @@ fn cli_get() {
         .stderr(contains("unimplemented"));
 }
 
-// `kvs set <KEY> <VALUE>` should print "unimplemented" to stderr and exit with non-zero code
+// `kvs set <KEY> <VALUE>` 应该在 stderr 中打印 "unimplemented" 并以非零代码退出
 #[test]
 fn cli_set() {
     Command::cargo_bin("kvs")
@@ -41,7 +41,7 @@ fn cli_set() {
         .stderr(contains("unimplemented"));
 }
 
-// `kvs rm <KEY>` should print "unimplemented" to stderr and exit with non-zero code
+// `kvs rm <KEY>` 应该在 stderr 中打印 "unimplemented" 并以非零代码退出
 #[test]
 fn cli_rm() {
     Command::cargo_bin("kvs")
@@ -112,7 +112,7 @@ fn cli_invalid_subcommand() {
         .failure();
 }
 
-// Should get previously stored value
+// 应该获取之前存储的值
 #[test]
 fn get_stored_value() {
     let mut store = KvStore::new();
@@ -124,7 +124,7 @@ fn get_stored_value() {
     assert_eq!(store.get("key2".to_owned()), Some("value2".to_owned()));
 }
 
-// Should overwrite existent value
+// 应该覆盖已存在的值
 #[test]
 fn overwrite_value() {
     let mut store = KvStore::new();
@@ -136,7 +136,7 @@ fn overwrite_value() {
     assert_eq!(store.get("key1".to_owned()), Some("value2".to_owned()));
 }
 
-// Should get `None` when getting a non-existent key
+// 获取不存在的键时应该返回 `None`
 #[test]
 fn get_non_existent_value() {
     let mut store = KvStore::new();

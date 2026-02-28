@@ -1,22 +1,22 @@
-//! A thin wrapper of [prost](https://docs.rs/prost/0.6.1/prost/)
+//! 对 [prost](https://docs.rs/prost/0.6.1/prost/) 的轻量级封装
 
-/// A labcodec message.
+/// 一个 labcodec 消息。
 pub trait Message: prost::Message + Default {}
 impl<T: prost::Message + Default> Message for T {}
 
-/// A message encoding error.
+/// 消息编码错误。
 pub type EncodeError = prost::EncodeError;
-/// A message decoding error.
+/// 消息解码错误。
 pub type DecodeError = prost::DecodeError;
 
-/// Encodes the message to a `Vec<u8>`.
+/// 将消息编码为 `Vec<u8>`。
 pub fn encode<M: Message>(message: &M, buf: &mut Vec<u8>) -> Result<(), EncodeError> {
     buf.reserve(message.encoded_len());
     message.encode(buf)?;
     Ok(())
 }
 
-/// Decodes an message from the buffer.
+/// 从缓冲区解码消息。
 pub fn decode<M: Message>(buf: &[u8]) -> Result<M, DecodeError> {
     M::decode(buf)
 }
@@ -24,10 +24,10 @@ pub fn decode<M: Message>(buf: &[u8]) -> Result<M, DecodeError> {
 #[cfg(test)]
 mod tests {
     mod fixture {
-        // The generated rust file:
+        // 生成的 rust 文件：
         // labs6824/target/debug/build/labcodec-hashhashhashhash/out/fixture.rs
         //
-        // It looks like:
+        // 它看起来像：
         //
         // ```no_run
         // /// A simple protobuf message.

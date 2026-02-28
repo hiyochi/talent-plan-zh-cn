@@ -5,28 +5,28 @@ use serde_json::Deserializer;
 use std::io::{BufReader, BufWriter, Write};
 use std::net::{TcpListener, TcpStream, ToSocketAddrs};
 
-/// The server of a key value store.
+/// 键值存储的服务器。
 pub struct KvsServer<E: KvsEngine> {
     engine: E,
 }
 
 impl<E: KvsEngine> KvsServer<E> {
-    /// Create a `KvsServer` with a given storage engine.
+    /// 使用给定的存储引擎创建一个 `KvsServer`。
     pub fn new(engine: E) -> Self {
         KvsServer { engine }
     }
 
-    /// Run the server listening on the given address
+    /// 启动服务器并监听指定地址。
     pub fn run<A: ToSocketAddrs>(mut self, addr: A) -> Result<()> {
         let listener = TcpListener::bind(addr)?;
         for stream in listener.incoming() {
             match stream {
                 Ok(stream) => {
                     if let Err(e) = self.serve(stream) {
-                        error!("Error on serving client: {}", e);
+                        error!("处理客户端时出错: {}", e);
                     }
                 }
-                Err(e) => error!("Connection failed: {}", e),
+                Err(e) => error!("连接失败: {}", e),
             }
         }
         Ok(())
@@ -43,13 +43,13 @@ impl<E: KvsEngine> KvsServer<E> {
                 let resp = $resp;
                 serde_json::to_writer(&mut writer, &resp)?;
                 writer.flush()?;
-                debug!("Response sent to {}: {:?}", peer_addr, resp);
+                debug!("已向 {} 发送响应: {:?}", peer_addr, resp);
             };};
         }
 
         for req in req_reader {
             let req = req?;
-            debug!("Receive request from {}: {:?}", peer_addr, req);
+            debug!("从 {} 接收到请求: {:?}", peer_addr, req);
             match req {
                 Request::Get { key } => send_resp!(match self.engine.get(key) {
                     Ok(value) => GetResponse::Ok(value),

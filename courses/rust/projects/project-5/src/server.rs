@@ -1,3 +1,4 @@
+```rust
 use crate::common::{Request, Response};
 use crate::{KvsEngine, KvsError, Result};
 use std::net::SocketAddr;
@@ -6,26 +7,26 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio::prelude::*;
 use tokio_serde_json::{ReadJson, WriteJson};
 
-/// The server of a key value store.
+/// 键值存储服务器。
 pub struct KvsServer<E: KvsEngine> {
     engine: E,
 }
 
 impl<E: KvsEngine> KvsServer<E> {
-    /// Create a `KvsServer` with a given storage engine.
+    /// 使用给定的存储引擎创建一个 `KvsServer`。
     pub fn new(engine: E) -> Self {
         KvsServer { engine }
     }
 
-    /// Run the server listening on the given address
+    /// 运行服务器，监听给定的地址
     pub fn run(self, addr: SocketAddr) -> Result<()> {
         let listener = TcpListener::bind(&addr)?;
         let server = listener
             .incoming()
-            .map_err(|e| error!("IO error: {}", e))
+            .map_err(|e| error!("IO 错误: {}", e))
             .for_each(move |tcp| {
                 let engine = self.engine.clone();
-                serve(engine, tcp).map_err(|e| error!("Error on serving client: {}", e))
+                serve(engine, tcp).map_err(|e| error!("服务客户端时出错: {}", e))
             });
         tokio::run(server);
         Ok(())
@@ -62,3 +63,4 @@ fn serve<E: KvsEngine>(engine: E, tcp: TcpStream) -> impl Future<Item = (), Erro
         .send_all(resp_stream)
         .map(|_| ())
 }
+```

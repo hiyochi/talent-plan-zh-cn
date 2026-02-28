@@ -2,29 +2,29 @@ use failure::Fail;
 use std::io;
 use std::string::FromUtf8Error;
 
-/// Error type for kvs
+/// KVS 的错误类型
 #[derive(Fail, Debug)]
 pub enum KvsError {
-    /// IO error
+    /// IO 错误
     #[fail(display = "IO error: {}", _0)]
     Io(#[cause] io::Error),
-    /// Serialization or deserialization error
+    /// 序列化或反序列化错误
     #[fail(display = "serde_json error: {}", _0)]
     Serde(#[cause] serde_json::Error),
-    /// Removing non-existent key error
+    /// 删除不存在的键的错误
     #[fail(display = "Key not found")]
     KeyNotFound,
-    /// Unexpected command type error.
-    /// It indicated a corrupted log or a program bug.
+    /// 未知的命令类型错误。
+    /// 表示日志损坏或程序存在 bug。
     #[fail(display = "Unexpected command type")]
     UnexpectedCommandType,
-    /// Key or value is invalid UTF-8 sequence
+    /// 键或值不是有效的 UTF-8 序列
     #[fail(display = "UTF-8 error: {}", _0)]
     Utf8(#[cause] FromUtf8Error),
-    /// Sled error
+    /// Sled 错误
     #[fail(display = "sled error: {}", _0)]
     Sled(#[cause] sled::Error),
-    /// Error with a string message
+    /// 带字符串消息的错误
     #[fail(display = "{}", _0)]
     StringError(String),
 }
@@ -53,5 +53,5 @@ impl From<sled::Error> for KvsError {
     }
 }
 
-/// Result type for kvs
+/// KVS 的结果类型
 pub type Result<T> = std::result::Result<T, KvsError>;

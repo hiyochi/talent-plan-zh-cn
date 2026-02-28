@@ -1,9 +1,8 @@
-# PNA Rust Prerequisites
+# PNA Rust 前置要求
 
-Don't meet all the [prerequisites][pre] to take this course? Here are some ideas
-for how to proceed.
+尚未满足本课程的所有[前置要求][pre]？以下是一些可行的建议：
 
-* A crash course on Rust by Michael Snoyman (Oct 2018) - [blog series][snoyman-blog] | [print friendly][snoyman-html]
+* Michael Snoyman 的 Rust 快速入门课程（2018 年 10 月）- [博客系列][snoyman-blog] | [打印友好版][snoyman-html]
 
 [pre]: ../README.md#user-content-prerequisites
 [snoyman-blog]: https://www.snoyman.com/blog/2018/10/introducing-rust-crash-course

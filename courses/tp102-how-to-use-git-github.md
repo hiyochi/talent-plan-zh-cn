@@ -1,89 +1,84 @@
-# TP 102: How to Use Git and GitHub
+# TP 102：如何使用Git和GitHub
 
-Git and GitHub are commonly used tools in open source practice. Whether you are considering contribute to an open source project or start your own open source project. This course includes a collection of Git and GitHub related learning materials and will guide you through everything you need to start contributing, from managing notifications to merging pull requests. 
+Git和GitHub是开源实践中的常用工具。无论您是打算贡献到开源项目还是启动自己的开源项目，本课程包含一系列Git和GitHub相关学习材料，将引导您完成从管理通知到合并拉取请求所需的一切，助您开始贡献。
 
-***Important note:*** ***How to Use Git and GitHub is in an alpha
-state.*** Its scope is limited. If you are taking it now you
-are brave, but you are also an early tester and your feedback is greatly
-appreciated. You are encouraged to reporting bugs, suggest changes, update the contents, etc. **See [Contributing Guide](../CONTRIBUTING.md) for more details.** 
+***重要提示：*** ***《如何使用Git和GitHub》目前处于alpha阶段。*** 其范围有限。如果您现在正在学习，您很勇敢，同时也是早期测试者，您的反馈非常宝贵。我们鼓励您报告bug、提出更改建议、更新内容等。**详情请参见[贡献指南](../CONTRIBUTING.md)。**
 
+## 适用人群
 
-## Who this is for
+新GitHub用户，Git新手
 
-New GitHub users, users new to Git
+## 你将学到什么？
 
-## What you will learn?
+* GitHub是什么
+* 如何使用GitHub
+* 如何创建分支和提交
+* 如何审查拉取请求
+* 如何管理合并冲突
+* 如何使用Markdown进行沟通
 
-* what GitHub is
-* how to use GitHub
-* how to create a branch and a commit
-* how to review a pull request
-* how to manage merge conflicts
-* how to communicate using Markdown
+### 先决条件：
 
-### Prerequisites:
+无。本课程是您在GitHub上第一天学习的绝佳入门。
 
-None. This course is a great introduction for your first day on GitHub.
+## 课程详情
 
-## Course details
+### 第一章：GitHub简介
 
-### Chapter 1: Introduction to GitHub
+**学习材料：**
 
-**Learning Material(s):**
+* [GitHub简介](https://lab.github.com/githubtraining/introduction-to-github)，由[GitHub培训团队](https://lab.github.com/githubtraining)创建的开源课程
 
-* [Introduction to GitHub](https://lab.github.com/githubtraining/introduction-to-github), an open source course created by [The GitHub Training Team](https://lab.github.com/githubtraining)
- 
-**Suggested Assignments:**
+**建议任务：**
 
-* Finish the lab.
+* 完成实验。
 
-### Chapter 2: Reviewing pull requests
+### 第二章：审查拉取请求
 
-**Learning Material(s):**
+**学习材料：**
 
-* [Reviewing pull requests](https://lab.github.com/githubtraining/reviewing-pull-requests), an open source course created by [The GitHub Training Team](https://lab.github.com/githubtraining)
- 
-**Suggested Assignments:**
+* [审查拉取请求](https://lab.github.com/githubtraining/reviewing-pull-requests)，由[GitHub培训团队](https://lab.github.com/githubtraining)创建的开源课程
 
-* Finish the lab.
+**建议任务：**
 
-### Chapter 3: Managing merge conflicts
+* 完成实验。
 
-**Learning Material(s):**
+### 第三章：管理合并冲突
 
-* [Managing merge conflicts](https://lab.github.com/githubtraining/managing-merge-conflicts), an open source course created by [The GitHub Training Team](https://lab.github.com/githubtraining)
- 
-**Suggested Assignments:**
+**学习材料：**
 
-* Finish the lab.
+* [管理合并冲突](https://lab.github.com/githubtraining/managing-merge-conflicts)，由[GitHub培训团队](https://lab.github.com/githubtraining)创建的开源课程
 
-### Chapter 4: Communicating using Markdown
+**建议任务：**
 
-**Learning Material(s):**
+* 完成实验。
 
-* [Communicating using Markdown](https://lab.github.com/githubtraining/communicating-using-markdown), an open source course created by [The GitHub Training Team](https://lab.github.com/githubtraining)
- 
-**Suggested Assignments:**
+### 第四章：使用Markdown进行沟通
 
-* Finish the lab.
+**学习材料：**
 
-### Chapter 5: Git Handbook
+* [使用Markdown进行沟通](https://lab.github.com/githubtraining/communicating-using-markdown)，由[GitHub培训团队](https://lab.github.com/githubtraining)创建的开源课程
 
-* [Git Handbook](https://guides.github.com/introduction/git-handbook/), the official learning material provided by [GitHub Guides](https://guides.github.com/)
+**建议任务：**
 
-**Suggested Assignments:**
+* 完成实验。
 
-No assignments, the git skill will be tested all the time you participate in an open source project.
+### 第五章：Git手册
 
-## Users who took this course also took
+* [Git手册](https://guides.github.com/introduction/git-handbook/)，由[GitHub指南](https://guides.github.com/)提供的官方学习材料
 
-* [TP 101: Introduction to Open Source Software](tp101-intro-to-oss.md)
-* [TP 103: Build A Welcoming Open Source Community](tp103-open-source-community.md)
+**建议任务：**
 
+无。参与开源项目时，Git技能将随时得到检验。
 
-## Acknowledgement
+## 修过此课程的用户也修过
 
-Special Thanks to:
+* [TP 101：开源软件入门](tp101-intro-to-oss.md)
+* [TP 103：构建包容的开源社区](tp103-open-source-community.md)
 
-* `Producer Wen`, `Qinyao Yang`, and `Jason Zhang`for testing this course and updating the materials.
-* [The GitHub Training Team](https://lab.github.com/githubtraining) for creating open source courses above.
+## 致谢
+
+特别感谢：
+
+* `Producer Wen`、`Qinyao Yang`和`Jason Zhang`对本课程的测试和材料更新。
+* [GitHub培训团队](https://lab.github.com/githubtraining)创建了上述开源课程。

@@ -1,5 +1,5 @@
 #![deny(missing_docs)]
-//! A simple key/value store.
+//! 一个简单的键值存储。
 
 pub use kv::KvStore;
 

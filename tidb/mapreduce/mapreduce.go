@@ -1,3 +1,4 @@
+```go
 package main
 
 import (
@@ -13,19 +14,19 @@ import (
 	"sync"
 )
 
-// KeyValue is a type used to hold the key/value pairs passed to the map and reduce functions.
+// KeyValue 是用于保存传递给 map 和 reduce 函数的键值对的类型。
 type KeyValue struct {
 	Key   string
 	Value string
 }
 
-// ReduceF function from MIT 6.824 LAB1
+// ReduceF 是 MIT 6.824 LAB1 中的 reduce 函数
 type ReduceF func(key string, values []string) string
 
-// MapF function from MIT 6.824 LAB1
+// MapF 是 MIT 6.824 LAB1 中的 map 函数
 type MapF func(filename string, contents string) []KeyValue
 
-// jobPhase indicates whether a task is scheduled as a map or reduce task.
+// jobPhase 表示任务被调度为 map 任务还是 reduce 任务。
 type jobPhase string
 
 const (
@@ -36,17 +37,17 @@ const (
 type task struct {
 	dataDir    string
 	jobName    string
-	mapFile    string   // only for map, the input file
-	phase      jobPhase // are we in mapPhase or reducePhase?
-	taskNumber int      // this task's index in the current phase
-	nMap       int      // number of map tasks
-	nReduce    int      // number of reduce tasks
-	mapF       MapF     // map function used in this job
-	reduceF    ReduceF  // reduce function used in this job
+	mapFile    string   // 仅用于 map 任务，输入文件
+	phase      jobPhase // 当前处于 mapPhase 还是 reducePhase？
+	taskNumber int      // 当前阶段中该任务的索引
+	nMap       int      // map 任务的数量
+	nReduce    int      // reduce 任务的数量
+	mapF       MapF     // 本任务中使用的 map 函数
+	reduceF    ReduceF  // 本任务中使用的 reduce 函数
 	wg         sync.WaitGroup
 }
 
-// MRCluster represents a map-reduce cluster.
+// MRCluster 表示一个 map-reduce 集群。
 type MRCluster struct {
 	nWorkers int
 	wg       sync.WaitGroup
@@ -64,15 +65,15 @@ func init() {
 	singleton.Start()
 }
 
-// GetMRCluster returns a reference to a MRCluster.
+// GetMRCluster 返回对 MRCluster 的引用。
 func GetMRCluster() *MRCluster {
 	return singleton
 }
 
-// NWorkers returns how many workers there are in this cluster.
+// NWorkers 返回此集群中工作线程的数量。
 func (c *MRCluster) NWorkers() int { return c.nWorkers }
 
-// Start starts this cluster.
+// Start 启动此集群。
 func (c *MRCluster) Start() {
 	for i := 0; i < c.nWorkers; i++ {
 		c.wg.Add(1)
@@ -109,9 +110,8 @@ func (c *MRCluster) worker() {
 				}
 			} else {
 				// YOUR CODE HERE :)
-				// hint: don't encode results returned by ReduceF, and just output
-				// them into the destination file directly so that users can get
-				// results formatted as what they want.
+				// 提示：不要对 ReduceF 返回的结果进行编码，而是直接将结果输出到目标文件，
+				// 以便用户能够以他们期望的格式获取结果。
 				panic("YOUR CODE HERE")
 			}
 			t.wg.Done()
@@ -121,13 +121,13 @@ func (c *MRCluster) worker() {
 	}
 }
 
-// Shutdown shutdowns this cluster.
+// Shutdown 关闭此集群。
 func (c *MRCluster) Shutdown() {
 	close(c.exit)
 	c.wg.Wait()
 }
 
-// Submit submits a job to this cluster.
+// Submit 将一个任务提交到此集群。
 func (c *MRCluster) Submit(jobName, dataDir string, mapF MapF, reduceF ReduceF, mapFiles []string, nReduce int) <-chan []string {
 	notify := make(chan []string)
 	go c.run(jobName, dataDir, mapF, reduceF, mapFiles, nReduce, notify)
@@ -135,7 +135,7 @@ func (c *MRCluster) Submit(jobName, dataDir string, mapF MapF, reduceF ReduceF, 
 }
 
 func (c *MRCluster) run(jobName, dataDir string, mapF MapF, reduceF ReduceF, mapFiles []string, nReduce int, notify chan<- []string) {
-	// map phase
+	// map 阶段
 	nMap := len(mapFiles)
 	tasks := make([]*task, 0, nMap)
 	for i := 0; i < nMap; i++ {
@@ -157,7 +157,7 @@ func (c *MRCluster) run(jobName, dataDir string, mapF MapF, reduceF ReduceF, map
 		t.wg.Wait()
 	}
 
-	// reduce phase
+	// reduce 阶段
 	// YOUR CODE HERE :D
 	panic("YOUR CODE HERE")
 }
@@ -175,3 +175,4 @@ func reduceName(dataDir, jobName string, mapTask int, reduceTask int) string {
 func mergeName(dataDir, jobName string, reduceTask int) string {
 	return path.Join(dataDir, "mrtmp."+jobName+"-res-"+strconv.Itoa(reduceTask))
 }
+```

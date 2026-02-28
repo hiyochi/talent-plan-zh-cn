@@ -1,5 +1,5 @@
 #![deny(missing_docs)]
-//! A simple key/value store.
+//! 一个简单的键值存储系统。
 
 pub use client::KvsClient;
 pub use engines::{KvStore, KvsEngine, SledKvsEngine};

@@ -1,30 +1,30 @@
 ```
 
-## Description
+## 描述
 
-what's the problem, how to solve it
+问题是什么，如何解决
 
-## Document Collection
+## 文档集合
 
-- Proposal doc: ${proposal doc}
-- Weekly report: ${weekly report link}
+- 提案文档：${proposal doc}
+- 周报：${weekly report link}
 
-## Talent Challenge Program information
+## 人才挑战计划信息
 
-- Mentor of this issue: @github_id
-- Recommended skills: ${skills and URL link}
-- Estimated Workloads: (XL, man-month)
+- 本问题导师：@github_id
+- 推荐技能：${skills and URL link}
+- 预估工作量：（XL，人月）
 
-## Milestones and action items
+## 里程碑与行动项
 
-Milestone 1: ${milestone descption}, Expected finish date: ${date}
+里程碑 1：${milestone descption}，预计完成日期：${date}
 
-- [ ] action item 1
-- [ ] action item 2
+- [ ] 行动项 1
+- [ ] 行动项 2
 
-Milestone 2: ${milestone descption}, Expected finish date: ${date}
+里程碑 2：${milestone descption}，预计完成日期：${date}
 
-- [ ] action item 1
-- [ ] action item 2
+- [ ] 行动项 1
+- [ ] 行动项 2
 
 ```

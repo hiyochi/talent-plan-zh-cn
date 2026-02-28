@@ -4,7 +4,7 @@ use sled::Db;
 use tokio::prelude::*;
 use tokio::sync::oneshot;
 
-/// Wrapper of `sled::Db`
+/// `sled::Db` 的包装器
 #[derive(Clone)]
 pub struct SledKvsEngine<P: ThreadPool> {
     pool: P,
@@ -12,10 +12,9 @@ pub struct SledKvsEngine<P: ThreadPool> {
 }
 
 impl<P: ThreadPool> SledKvsEngine<P> {
-    /// Creates a `SledKvsEngine` from `sled::Db`.
+    /// 从 `sled::Db` 创建一个 `SledKvsEngine`。
     ///
-    /// Operations are run in the given thread pool. `concurrency` specifies the number of
-    /// threads in the thread pool.
+    /// 操作将在指定的线程池中运行。`concurrency` 指定线程池中的线程数量。
     pub fn new(db: Db, concurrency: u32) -> Result<Self> {
         let pool = P::new(concurrency)?;
         Ok(SledKvsEngine { pool, db })
@@ -33,7 +32,7 @@ impl<P: ThreadPool> KvsEngine for SledKvsEngine<P> {
                 .map(|_| ())
                 .map_err(KvsError::from);
             if tx.send(res).is_err() {
-                error!("Receiving end is dropped");
+                error!("接收端已被丢弃");
             }
         });
         Box::new(
@@ -54,7 +53,7 @@ impl<P: ThreadPool> KvsEngine for SledKvsEngine<P> {
                     .transpose()?)
             })();
             if tx.send(res).is_err() {
-                error!("Receiving end is dropped");
+                error!("接收端已被丢弃");
             }
         });
         Box::new(
@@ -73,7 +72,7 @@ impl<P: ThreadPool> KvsEngine for SledKvsEngine<P> {
                 Ok(())
             })();
             if tx.send(res).is_err() {
-                error!("Receiving end is dropped");
+                error!("接收端已被丢弃");
             }
         });
         Box::new(

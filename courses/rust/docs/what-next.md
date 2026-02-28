@@ -1,3 +1,3 @@
-# What's next now that you've completed PNA Rust?
+# 在你完成 PNA Rust 之后，接下来该做什么？
 
-Coming soon!
+即将推出！

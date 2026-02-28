@@ -1,42 +1,42 @@
-# Talent Challenge Program
+# 人才挑战计划
 
-Talent Challenge program is a platform that offers a structured remote mentoring program for **college students** successfully completing talent plan courses or having contributed to TiDB projects. Open source projects related to TiDB ecosystems will be selected together with professional mentors. Students **successfully completing talent plan courses or having contributed to TiDB projects** can apply for the projects, one at a time, and finish the projects with the help of the mentors in a given time. Mentees gain real-world experience by working closely with mentors. Students who successfully complete the projects will receive **bonus and better job opportunities**.
+人才挑战计划是一个为**大学生**提供的结构化远程导师计划，面向成功完成人才计划课程或对 TiDB 项目做出过贡献的学生。与专业导师共同遴选与 TiDB 生态系统相关的开源项目。学生可**在成功完成人才计划课程或对 TiDB 项目做出贡献的前提下**，每次申请一个项目，并在指定时间内，在导师的指导下完成项目。通过与导师紧密合作，学员将获得真实的项目经验。成功完成项目的学员将获得**奖金及更好的就业机会**。
 
-### Current cycle
+### 当前周期
 
-Talent Challenge program season 1 is ongoing, check the timeline and projects available on [dedicated page](s1.md).
+人才挑战计划第一季正在进行中，请查阅[专属页面](s1.md)了解时间安排及可参与的项目。
 
-## Communication
+## 沟通渠道
 
-Feel free to contact us in the **#talent-challenge** channel of the [tidbcommunity](https://slack.tidb.io/invite?team=tidb-community&channel=talent-challenge-&ref=github/talent-plan) slack workspace if any questions and suggestions about Talent Challenge program arise.
+如有关于人才挑战计划的任何问题或建议，请随时在 [tidbcommunity](https://slack.tidb.io/invite?team=tidb-community&channel=talent-challenge-&ref=github/talent-plan) Slack 工作区的 **#talent-challenge** 频道联系我们。
 
-## How to Participate
+## 如何参与
 
-You can participate in Talent Challenge program based on your role. Talent Challenge supports the following roles.
+您可以根据自身角色参与人才挑战计划。该计划支持以下角色：
 
-### Project Maintainers/Mentors
+### 项目维护者/导师
 
-Project maintainers or mentors are requested to submit the ideas related to **TiDB Ecosystem** under the [Project Ideas](project-ideas.md) page using the [template](PROJECT_IDEA_TEMPLATE.md).
+项目维护者或导师需通过 [项目创意](project-ideas.md) 页面，使用 [模板](PROJECT_IDEA_TEMPLATE.md) 提交与 **TiDB 生态系统** 相关的项目建议。
 
-PMC(Project Management Committee) of TiDB community will select the projects that will participate in the Talent Challenge program round and they will appear on the [Selected Projects](selected-projects.md) page after the selection.
+TiDB 社区的项目管理委员会（PMC）将从中遴选参与人才挑战计划周期的项目，入选项目将出现在 [入选项目](selected-projects.md) 页面。
 
-*Note:*
+*注意：*
 
-- *Projects to be selected must have one mentor at least.*
-- *Mentors should be prepared to donate their time to help mentees with the project.*
+- *入选项目必须至少配备一名导师。*
+- *导师需准备好投入时间，协助学员完成项目。*
 
-### Mentees
+### 学员（ mentees ）
 
-*Note:*
+*注意：*
 
-- Only **students who have completed talent plan courses or having contributed to TiDB projects** can apply for Talent Challenge program. 
-- You are eligible to participate as a mentee in a single project per-cycle.
+- 仅限**已完成人才计划课程或对 TiDB 项目做出过贡献的学生**申请参与人才挑战计划。
+- 每个周期内，每位学员仅可参与一个项目。
 
-**Prior to the opening of applications, mentee candidates are encouraged to talk to mentors about the project.** This helps them refine their ideas and deepen their understanding of the project.
+**在申请开放前，建议学员主动与导师沟通项目内容。** 这有助于学员完善想法，加深对项目的理解。
 
-#### Mentee selection process
+#### 学员选拔流程
 
-1. Mentee candidates who want to participate in Talent Challenge are expected to join Slack Channel ([#talent-challenge](https://slack.tidb.io/invite?team=tidb-community&channel=talent-challenge-&ref=github/talent-plan)) to have self-introductions.
-2. The mentors would communicate with mentee candidates about the project they would focus on and assign mentee candidates coding tasks.
-3. Mentee candidates need to conduct coding tasks for their desired project under the guidance of mentors and submit their resumes to [talent-plan@tidb.io](maito:talent-plan@tidb.io) using the [template](MENTEE_APPLY_TEMPLATE.md). 
-4. The mentors would decide whether to accept mentee candidates in the project based on their scores of talent plan courses, coding assignments, and capabilities.
+1. 意愿参与人才挑战计划的学员需加入 Slack 频道（[#talent-challenge](https://slack.tidb.io/invite?team=tidb-community&channel=talent-challenge-&ref=github/talent-plan)）进行自我介绍。
+2. 导师将与学员候选人沟通其拟参与的项目，并分配编码任务。
+3. 学员候选人需在导师指导下完成所选项目的编码任务，并使用 [模板](MENTEE_APPLY_TEMPLATE.md) 将个人简历发送至 [talent-plan@tidb.io](mailto:talent-plan@tidb.io)。
+4. 导师将根据学员在人才计划课程中的成绩、编码任务完成情况及综合能力，决定是否录取其参与项目。

@@ -1,10 +1,9 @@
-# PNA Rust &mdash; Building Blocks 5
+# PNA Rust — 构建模块 5
 
-Let's learn some building blocks!
+让我们学习一些构建模块！
 
-Put your other projects and concerns aside. Take a breath and relax. Here
-are some fun resources for you to explore.
+把其他项目和事务放在一边，深呼吸，放松一下。这里有一些有趣的资源供你探索。
 
-Read all the readings and perform all the exercises.
+请阅读所有材料并完成所有练习。
 
-Coming soon! <!-- TODO -->
+即将推出！<!-- TODO -->

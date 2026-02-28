@@ -7,20 +7,19 @@ import (
 	"strings"
 )
 
-// ExampleURLTop10 generates RoundsArgs for getting the 10 most frequent URLs.
-// There are two rounds in this approach.
-// The first round will do url count.
-// The second will sort results generated in the first round and
-// get the 10 most frequent URLs.
+// ExampleURLTop10 生成 RoundsArgs，用于获取出现频率最高的 10 个 URL。
+// 此方法包含两个阶段。
+// 第一阶段进行 URL 计数。
+// 第二阶段对第一阶段生成的结果进行排序，并获取出现频率最高的 10 个 URL。
 func ExampleURLTop10(nWorkers int) RoundsArgs {
 	var args RoundsArgs
-	// round 1: do url count
+	// 第一阶段：进行 URL 计数
 	args = append(args, RoundArgs{
 		MapFunc:    ExampleURLCountMap,
 		ReduceFunc: ExampleURLCountReduce,
 		NReduce:    nWorkers,
 	})
-	// round 2: sort and get the 10 most frequent URLs
+	// 第二阶段：排序并获取出现频率最高的 10 个 URL
 	args = append(args, RoundArgs{
 		MapFunc:    ExampleURLTop10Map,
 		ReduceFunc: ExampleURLTop10Reduce,
@@ -29,7 +28,7 @@ func ExampleURLTop10(nWorkers int) RoundsArgs {
 	return args
 }
 
-// ExampleURLCountMap is the map function in the first round
+// ExampleURLCountMap 是第一阶段的 map 函数
 func ExampleURLCountMap(filename string, contents string) []KeyValue {
 	lines := strings.Split(contents, "\n")
 	kvs := make([]KeyValue, 0, len(lines))
@@ -43,12 +42,12 @@ func ExampleURLCountMap(filename string, contents string) []KeyValue {
 	return kvs
 }
 
-// ExampleURLCountReduce is the reduce function in the first round
+// ExampleURLCountReduce 是第一阶段的 reduce 函数
 func ExampleURLCountReduce(key string, values []string) string {
 	return fmt.Sprintf("%s %s\n", key, strconv.Itoa(len(values)))
 }
 
-// ExampleURLTop10Map is the map function in the second round
+// ExampleURLTop10Map 是第二阶段的 map 函数
 func ExampleURLTop10Map(filename string, contents string) []KeyValue {
 	lines := strings.Split(contents, "\n")
 	kvs := make([]KeyValue, 0, len(lines))
@@ -58,7 +57,7 @@ func ExampleURLTop10Map(filename string, contents string) []KeyValue {
 	return kvs
 }
 
-// ExampleURLTop10Reduce is the reduce function in the second round
+// ExampleURLTop10Reduce 是第二阶段的 reduce 函数
 func ExampleURLTop10Reduce(key string, values []string) string {
 	cnts := make(map[string]int, len(values))
 	for _, v := range values {

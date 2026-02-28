@@ -14,7 +14,7 @@ macro_rules! service {
     ) => {
         $(#[$service_attr])*
         pub mod $svc_name {
-            // In order to find input and output.
+            // 为了查找输入和输出类型。
             use super::*;
             // $( use super::$input; )*
             // $( use super::$output;)*

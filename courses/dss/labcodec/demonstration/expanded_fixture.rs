@@ -1,4 +1,4 @@
-/// A simple protobuf message.
+/// 一个简单的 protobuf 消息。
 pub struct Msg {
     #[prost(enumeration = "msg::Type", tag = "1")]
     pub r#type: i32,
@@ -236,11 +236,11 @@ impl ::std::fmt::Debug for Msg {
 }
 #[allow(dead_code)]
 impl Msg {
-    ///Returns the enum value of `type`, or the default if the field is set to an invalid enum value.
+    ///返回 `type` 的枚举值，如果字段设置为无效的枚举值，则返回默认值。
     pub fn r#type(&self) -> msg::Type {
         msg::Type::from_i32(self.r#type).unwrap_or(msg::Type::default())
     }
-    ///Sets `type` to the provided enum value.
+    ///将 `type` 设置为提供的枚举值。
     pub fn set_type(&mut self, value: msg::Type) {
         self.r#type = value as i32;
     }
@@ -368,7 +368,7 @@ pub mod msg {
         }
     }
     impl Type {
-        ///Returns `true` if `value` is a variant of `Type`.
+        ///如果 `value` 是 `Type` 的变体，则返回 `true`。
         pub fn is_valid(value: i32) -> bool {
             match value {
                 0 => true,
@@ -378,7 +378,7 @@ pub mod msg {
                 _ => false,
             }
         }
-        ///Converts an `i32` to a `Type`, or `None` if `value` is not a valid variant.
+        ///将 `i32` 转换为 `Type`，如果 `value` 不是有效的变体，则返回 `None`。
         pub fn from_i32(value: i32) -> ::std::option::Option<Type> {
             match value {
                 0 => ::std::option::Option::Some(Type::Unknown),

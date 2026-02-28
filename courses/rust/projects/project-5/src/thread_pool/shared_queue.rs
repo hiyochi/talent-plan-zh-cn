@@ -5,15 +5,14 @@ use crate::Result;
 
 use crossbeam::channel::{self, Receiver, Sender};
 
-// Note for Rust training course: the thread pool is not implemented using
-// `catch_unwind` because it would require the task to be `UnwindSafe`.
+// 注意：在 Rust 培训课程中，线程池未使用 `catch_unwind` 实现，
+// 因为这要求任务实现 `UnwindSafe` 特性。
 
-/// A thread pool using a shared queue inside.
+/// 一个使用内部共享队列的线程池。
 ///
-/// If a spawned task panics, the old thread will be destroyed and a new one will be
-/// created. It fails silently when any failure to create the thread at the OS level
-/// is captured after the thread pool is created. So, the thread number in the pool
-/// can decrease to zero, then spawning a task to the thread pool will panic.
+/// 如果某个任务发生恐慌，旧线程将被销毁并创建一个新线程。
+/// 在线程池创建后，如果操作系统层面创建线程失败，会静默忽略。
+/// 因此，线程池中的线程数量可能减少到零，此时向线程池提交任务将导致恐慌。
 #[derive(Clone)]
 pub struct SharedQueueThreadPool {
     tx: Sender<Box<dyn FnOnce() + Send + 'static>>,
@@ -29,11 +28,11 @@ impl ThreadPool for SharedQueueThreadPool {
         Ok(SharedQueueThreadPool { tx })
     }
 
-    /// Spawns a function into the thread pool.
+    /// 将一个函数提交到线程池中执行。
     ///
-    /// # Panics
+    /// # 潘克（Panics）
     ///
-    /// Panics if the thread pool has no thread.
+    /// 如果线程池中没有线程，则会触发恐慌。
     fn spawn<F>(&self, job: F)
     where
         F: FnOnce() + Send + 'static,

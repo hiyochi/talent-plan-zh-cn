@@ -1,8 +1,9 @@
+```rust
 use std::{error, fmt, result};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Error {
-    NoLeader,
+    NoLeader, // 无领导者
 }
 
 impl fmt::Display for Error {
@@ -14,9 +15,10 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match *self {
-            Error::NoLeader => None,
+            Error::NoLeader => None, // 无领导者错误没有源错误
         }
     }
 }
 
-pub type Result<T> = result::Result<T, Error>;
+pub type Result<T> = result::Result<T, Error>; // 定义结果类型，使用自定义错误类型
+```

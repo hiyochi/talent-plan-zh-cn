@@ -1,8 +1,6 @@
-```
-#### TiDB Ecosystem Project Name
-##### Title
-- Description:
-- Recommended Skills:
-- Mentor(s):
-- Upstream Issue or RFC (URL):
-```
+#### TiDB 生态系统项目名称
+##### 标题
+- 描述：
+- 推荐技能：
+- 导师：
+- 上游问题或 RFC（链接）：

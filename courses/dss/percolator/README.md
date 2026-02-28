@@ -1,69 +1,50 @@
-# The Percolator lab
+# Percolator 实验
 
-## What is Percolator
+## 什么是 Percolator
 
-Percolator is a system built by Google for incremental processing on a very
-large data set. Percolator also provides a distributed transaction protocol with
-ACID snapshot-isolation semantics. You can find more details in the paper:
-[Large-scale Incremental Processing Using Distributed Transactions and Notifications](https://storage.googleapis.com/pub-tools-public-publication-data/pdf/36726.pdf).
+Percolator 是 Google 构建的一个系统，用于在超大规模数据集上进行增量处理。Percolator 还提供了一个分布式事务协议，支持 ACID 快照隔离语义。你可以在这篇论文中找到更多细节：[使用分布式事务和通知进行大规模增量处理](https://storage.googleapis.com/pub-tools-public-publication-data/pdf/36726.pdf)。
 
-## Lab prerequisites
+## 实验前提条件
 
-To start this lab, there are some prerequisites you need to:
+要开始本实验，你需要满足以下前提条件：
 
-1. be familiar with Rust (You can also learn something from our Rust training
-course)
+1. 熟悉 Rust（你也可以从我们的 Rust 培训课程中学到一些知识）
 
-2. know about how protobuf works
+2. 了解 protobuf 的工作原理
 
-3. have basic knowledge of how RPC works
+3. 对 RPC 的工作原理有基本的了解
 
-4. have basic knowledge of what is the distributed transaction
+4. 对分布式事务有基本的了解
 
-## Concepts of the lab
+## 实验概念
 
-### Server
+### 服务器
 
-There are two kinds of servers which provide different services in this lab: the
-TSO server and the storage server.
+本实验中有两种服务器，它们提供不同的服务：TSO 服务器和存储服务器。
 
-#### TSO server
+#### TSO 服务器
 
-Percolator relies on a service named *timestamp oracle*. The TSO server
-implemented by `TimestampOracle` can produce timestamps in a strictly increasing
-order. All transactions need to get the unique timestamp to indicate the
-execution order.
+Percolator 依赖于一个名为*时间戳预言机*的服务。由 `TimestampOracle` 实现的 TSO 服务器可以按严格递增的顺序生成时间戳。所有事务都需要获取唯一的时间戳来指示执行顺序。
 
-#### Storage server
+#### 存储服务器
 
-Percolator is built upon the Bigtable, which presents a multi-dimensional sorted
-map to users. In this lab, the storage server implemented by `MemoryStorage`,
-which consists of three columns, is used to simulate the Bigtable. These columns
-which implemented by `BTreeMap` are similar to the column in the Bigtable. In
-particular, the `MemoryStorage` has three columns: `Write`, `Data`, `Lock` to
-keep consistent with the Bigtable.
+Percolator 构建在 Bigtable 之上，Bigtable 向用户呈现一个多维排序映射。在本实验中，由 `MemoryStorage` 实现的存储服务器用于模拟 Bigtable，它包含三列。这些由 `BTreeMap` 实现的列类似于 Bigtable 中的列。特别是，`MemoryStorage` 有三列：`Write`、`Data`、`Lock`，以保持与 Bigtable 的一致性。
 
-Besides, the storage also needs to provide the basic operations like `read`,
-`write` and `erase` to manipulate the data stored in it.
+此外，存储还需要提供基本的 `read`、`write` 和 `erase` 操作来操作其中存储的数据。
 
-### Client
+### 客户端
 
-The client will `begin` a transaction which contains a set of operations, like
-`get` and `set`, and call `commit` to commit a transaction. Also, the client
-will call `get_timestamp` to obtain a timestamp.
+客户端将 `begin` 一个事务，该事务包含一组操作，如 `get` 和 `set`，并调用 `commit` 来提交事务。此外，客户端还将调用 `get_timestamp` 来获取时间戳。
 
-More implementation details can be found in the paper.
+更多实现细节可以在论文中找到。
 
-## Writing your own implementation
+## 编写你自己的实现
 
-There are some comments leaving in this project such as "Your definitions here"
-or "Your code here". You need to write the code by yourself according to the paper.
-There are not many strict restrictions, and thus you can define as many variables
-in both *struct* and *proto* as required to implement the functionality.
+本项目中有一些注释，如“此处为你的定义”或“此处为你的代码”。你需要根据论文自行编写代码。没有太多严格的限制，因此你可以根据需要定义任意数量的变量，无论是在 *struct* 还是 *proto* 中。
 
-## Testing your work
+## 测试你的工作
 
-You can directly run the following command in the current directory:
+你可以直接在当前目录中运行以下命令：
 
 ```sh
 make test_percolator

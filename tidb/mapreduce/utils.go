@@ -10,14 +10,14 @@ import (
 	"strings"
 )
 
-// RoundArgs contains arguments used in a map-reduce round.
+// RoundArgs 包含在一次 map-reduce 轮次中使用的参数。
 type RoundArgs struct {
 	MapFunc    MapF
 	ReduceFunc ReduceF
 	NReduce    int
 }
 
-// RoundsArgs represents arguments used in multiple map-reduce rounds.
+// RoundsArgs 表示在多轮 map-reduce 中使用的参数。
 type RoundsArgs []RoundArgs
 
 type urlCount struct {
@@ -25,7 +25,7 @@ type urlCount struct {
 	cnt int
 }
 
-// TopN returns topN urls in the urlCntMap.
+// TopN 返回 urlCntMap 中前 N 个 URL。
 func TopN(urlCntMap map[string]int, n int) ([]string, []int) {
 	ucs := make([]*urlCount, 0, len(urlCntMap))
 	for k, v := range urlCntMap {
@@ -49,7 +49,7 @@ func TopN(urlCntMap map[string]int, n int) ([]string, []int) {
 	return urls, cnts
 }
 
-// CheckFile checks if these two files are same.
+// CheckFile 检查这两个文件是否相同。
 func CheckFile(expected, got string) (string, bool) {
 	c1, err := ioutil.ReadFile(expected)
 	if err != nil {
@@ -69,7 +69,7 @@ func CheckFile(expected, got string) (string, bool) {
 	return errMsg, false
 }
 
-// CreateFileAndBuf opens or creates a specific file for writing.
+// CreateFileAndBuf 打开或创建一个指定文件用于写入。
 func CreateFileAndBuf(fpath string) (*os.File, *bufio.Writer) {
 	dir := path.Dir(fpath)
 	os.MkdirAll(dir, 0777)
@@ -80,7 +80,7 @@ func CreateFileAndBuf(fpath string) (*os.File, *bufio.Writer) {
 	return f, bufio.NewWriterSize(f, 1<<20)
 }
 
-// OpenFileAndBuf opens a specific file for reading.
+// OpenFileAndBuf 打开一个指定文件用于读取。
 func OpenFileAndBuf(fpath string) (*os.File, *bufio.Reader) {
 	f, err := os.OpenFile(fpath, os.O_RDONLY, 0666)
 	if err != nil {
@@ -89,7 +89,7 @@ func OpenFileAndBuf(fpath string) (*os.File, *bufio.Reader) {
 	return f, bufio.NewReader(f)
 }
 
-// WriteToBuf write strs to this buffer.
+// WriteToBuf 将字符串写入缓冲区。
 func WriteToBuf(buf *bufio.Writer, strs ...string) {
 	for _, str := range strs {
 		if _, err := buf.WriteString(str); err != nil {
@@ -98,7 +98,7 @@ func WriteToBuf(buf *bufio.Writer, strs ...string) {
 	}
 }
 
-// SafeClose flushes this buffer and closes this file.
+// SafeClose 刷新缓冲区并关闭文件。
 func SafeClose(f *os.File, buf *bufio.Writer) {
 	if buf != nil {
 		if err := buf.Flush(); err != nil {
@@ -110,7 +110,7 @@ func SafeClose(f *os.File, buf *bufio.Writer) {
 	}
 }
 
-// FileOrDirExist tests if this file or dir exist in a simple way.
+// FileOrDirExist 简单地测试该文件或目录是否存在。
 func FileOrDirExist(p string) bool {
 	_, err := os.Stat(p)
 	return err == nil

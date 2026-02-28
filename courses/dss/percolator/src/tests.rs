@@ -1,3 +1,4 @@
+```rust
 use std::sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -12,16 +13,19 @@ use crate::client::Client;
 use crate::server::{MemoryStorage, TimestampOracle};
 use crate::service::{add_transaction_service, add_tso_service, TSOClient, TransactionClient};
 
+// 提交钩子结构体，用于控制请求和响应的丢弃行为
 struct CommitHooks {
-    drop_req: AtomicBool,
-    drop_resp: AtomicBool,
-    fail_primary: AtomicBool,
+    drop_req: AtomicBool,      // 是否丢弃请求
+    drop_resp: AtomicBool,     // 是否丢弃响应
+    fail_primary: AtomicBool,  // 是否使主请求失败
 }
 
 impl RpcHooks for CommitHooks {
+    // 在分发请求前调用，用于决定是否丢弃请求
     fn before_dispatch(&self, fq_name: &str, req: &[u8]) -> Result<()> {
         if self.drop_req.load(Ordering::Relaxed) && fq_name == "transaction.commit" {
             let m = crate::msg::CommitRequest::decode(req).unwrap();
+            // 如果是主请求且未设置失败主请求标志，则允许通过
             if m.is_primary && !self.fail_primary.load(Ordering::Relaxed) {
                 return Ok(());
             }
@@ -29,6 +33,7 @@ impl RpcHooks for CommitHooks {
         }
         Ok(())
     }
+    // 在分发请求后调用，用于决定是否丢弃响应
     fn after_dispatch(&self, fq_name: &str, resp: Result<Vec<u8>>) -> Result<Vec<u8>> {
         if self.drop_resp.load(Ordering::Relaxed) && fq_name == "transaction.commit" {
             return Err(Error::Other("resphook".to_owned()));
@@ -37,12 +42,14 @@ impl RpcHooks for CommitHooks {
     }
 }
 
+// 初始化日志记录器
 fn init_logger() {
     use std::sync::Once;
     static LOGGER_INIT: Once = Once::new();
     LOGGER_INIT.call_once(env_logger::init);
 }
 
+// 初始化测试环境，包括网络、客户端和钩子
 fn init(num_clinet: usize) -> (Network, Vec<Client>, Arc<CommitHooks>) {
     init_logger();
 
@@ -86,6 +93,7 @@ fn init(num_clinet: usize) -> (Network, Vec<Client>, Arc<CommitHooks>) {
 }
 
 #[test]
+// 测试在不可靠网络下获取时间戳的行为
 fn test_get_timestamp_under_unreliable_network() {
     let (rn, clients, _) = init(3);
     let mut children = vec![];
@@ -118,6 +126,7 @@ fn test_get_timestamp_under_unreliable_network() {
 
 #[test]
 // https://github.com/ept/hermitage/blob/master/sqlserver.md#predicate-many-preceders-pmp
+// 测试谓词多前驱者（PMP）的读谓词行为
 fn test_predicate_many_preceders_read_predicates() {
     let (_, clients, _) = init(3);
 
@@ -141,6 +150,7 @@ fn test_predicate_many_preceders_read_predicates() {
 
 #[test]
 // https://github.com/ept/hermitage/blob/master/sqlserver.md#predicate-many-preceders-pmp
+// 测试谓词多前驱者（PMP）的写谓词行为
 fn test_predicate_many_preceders_write_predicates() {
     let (_, clients, _) = init(3);
 
@@ -167,6 +177,7 @@ fn test_predicate_many_preceders_write_predicates() {
 
 #[test]
 // https://github.com/ept/hermitage/blob/master/sqlserver.md#lost-update-p4
+// 测试丢失更新（P4）行为
 fn test_lost_update() {
     let (_, clients, _) = init(3);
 
@@ -193,6 +204,7 @@ fn test_lost_update() {
 
 #[test]
 // https://github.com/ept/hermitage/blob/master/sqlserver.md#read-skew-g-single
+// 测试读偏斜（G-single）的只读行为
 fn test_read_skew_read_only() {
     let (_, clients, _) = init(3);
 
@@ -221,6 +233,7 @@ fn test_read_skew_read_only() {
 
 #[test]
 // https://github.com/ept/hermitage/blob/master/sqlserver.md#read-skew-g-single
+// 测试读偏斜（G-single）的谓词依赖行为
 fn test_read_skew_predicate_dependencies() {
     let (_, clients, _) = init(3);
 
@@ -247,6 +260,7 @@ fn test_read_skew_predicate_dependencies() {
 
 #[test]
 // https://github.com/ept/hermitage/blob/master/sqlserver.md#read-skew-g-single
+// 测试读偏斜（G-single）的写谓词行为
 fn test_read_skew_write_predicate() {
     let (_, clients, _) = init(3);
 
@@ -276,6 +290,7 @@ fn test_read_skew_write_predicate() {
 
 #[test]
 // https://github.com/ept/hermitage/blob/master/sqlserver.md#write-skew-g2-item
+// 测试写偏斜（G2-item）行为
 fn test_write_skew() {
     let (_, clients, _) = init(3);
 
@@ -305,6 +320,7 @@ fn test_write_skew() {
 
 #[test]
 // https://github.com/ept/hermitage/blob/master/sqlserver.md#anti-dependency-cycles-g2
+// 测试反依赖循环（G2）行为
 fn test_anti_dependency_cycles() {
     let (_, clients, _) = init(4);
 
@@ -333,6 +349,7 @@ fn test_anti_dependency_cycles() {
 }
 
 #[test]
+// 测试提交主请求时丢弃次要请求的行为
 fn test_commit_primary_drop_secondary_requests() {
     let (_, clients, hook) = init(2);
 
@@ -352,6 +369,7 @@ fn test_commit_primary_drop_secondary_requests() {
 }
 
 #[test]
+// 测试提交主请求成功的行为
 fn test_commit_primary_success() {
     let (_, clients, hook) = init(2);
 
@@ -371,6 +389,7 @@ fn test_commit_primary_success() {
 }
 
 #[test]
+// 测试提交主请求成功但无响应的行为
 fn test_commit_primary_success_without_response() {
     let (_, clients, hook) = init(2);
 
@@ -390,6 +409,7 @@ fn test_commit_primary_success_without_response() {
 }
 
 #[test]
+// 测试提交主请求失败的行为
 fn test_commit_primary_fail() {
     let (_, clients, hook) = init(2);
 
@@ -408,3 +428,4 @@ fn test_commit_primary_fail() {
     assert_eq!(client1.get(b"4".to_vec()), Ok(Vec::new()));
     assert_eq!(client1.get(b"5".to_vec()), Ok(Vec::new()));
 }
+```

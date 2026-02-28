@@ -1,23 +1,22 @@
-# Mentee Application Form Template
+# 学员申请表模板
 
-Mail to: talent-plan@tidb.io
+发送至：talent-plan@tidb.io
 
-## Mail Subject: 
+## 邮件主题：
 
-TCP Mentee Application - {project name} - {personal name}
+TCP 学员申请 - {项目名称} - {个人姓名}
 
-## Message body
+## 邮件正文：
 
-Please make a self-introduction briefly, including but not limited to:
+请简要进行自我介绍，内容包括但不限于：
 
-* Your name
-* Your nationality
-* Your education background
-* The project you are applying for
-* Your performance in talent plan courses or what you have contributed to TiDB projects
-* Any other evidences that prove your capabilities
+* 您的姓名
+* 您的国籍
+* 您的教育背景
+* 您申请的项目
+* 您在人才计划课程中的表现，或您对 TiDB 项目所做的贡献
+* 任何其他能证明您能力的材料
 
+## 附件
 
-## Attachments
-
-Please attach your updated profile and any other materials that demonstrate your abilities.
+请附上您最新的个人简历及其他能展示您能力的材料。

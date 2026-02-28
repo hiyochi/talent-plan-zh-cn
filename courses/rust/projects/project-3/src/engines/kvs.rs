@@ -1,3 +1,4 @@
+```rust
 use std::collections::{BTreeMap, HashMap};
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, BufReader, BufWriter, Read, Seek, SeekFrom, Write};
@@ -13,11 +14,10 @@ use std::ffi::OsStr;
 
 const COMPACTION_THRESHOLD: u64 = 1024 * 1024;
 
-/// The `KvStore` stores string key/value pairs.
+/// `KvStore` 存储字符串键值对。
 ///
-/// Key/value pairs are persisted to disk in log files. Log files are named after
-/// monotonically increasing generation numbers with a `log` extension name.
-/// A `BTreeMap` in memory stores the keys and the value locations for fast query.
+/// 键值对以日志文件的形式持久化到磁盘。日志文件以单调递增的生成编号命名，并带有 `.log` 扩展名。
+/// 内存中的 `BTreeMap` 存储键和值的位置，以实现快速查询。
 ///
 /// ```rust
 /// # use kvs::{KvStore, Result};
@@ -32,27 +32,26 @@ const COMPACTION_THRESHOLD: u64 = 1024 * 1024;
 /// # }
 /// ```
 pub struct KvStore {
-    // directory for the log and other data
+    // 日志和其他数据的目录
     path: PathBuf,
-    // map generation number to the file reader
+    // 将生成编号映射到文件读取器
     readers: HashMap<u64, BufReaderWithPos<File>>,
-    // writer of the current log
+    // 当前日志的写入器
     writer: BufWriterWithPos<File>,
     current_gen: u64,
     index: BTreeMap<String, CommandPos>,
-    // the number of bytes representing "stale" commands that could be
-    // deleted during a compaction
+    // 在压缩过程中可删除的“过时”命令所占的字节数
     uncompacted: u64,
 }
 
 impl KvStore {
-    /// Opens a `KvStore` with the given path.
+    /// 使用给定路径打开一个 `KvStore`。
     ///
-    /// This will create a new directory if the given one does not exist.
+    /// 如果指定的目录不存在，则会创建它。
     ///
-    /// # Errors
+    /// # 错误
     ///
-    /// It propagates I/O or deserialization errors during the log replay.
+    /// 在日志重放过程中，会传播 I/O 或反序列化错误。
     pub fn open(path: impl Into<PathBuf>) -> Result<KvStore> {
         let path = path.into();
         fs::create_dir_all(&path)?;
@@ -82,21 +81,21 @@ impl KvStore {
         })
     }
 
-    /// Clears stale entries in the log.
+    /// 清除日志中的过时条目。
     pub fn compact(&mut self) -> Result<()> {
-        // increase current gen by 2. current_gen + 1 is for the compaction file
+        // 将当前生成编号增加 2。current_gen + 1 用于压缩文件
         let compaction_gen = self.current_gen + 1;
         self.current_gen += 2;
         self.writer = self.new_log_file(self.current_gen)?;
 
         let mut compaction_writer = self.new_log_file(compaction_gen)?;
 
-        let mut new_pos = 0; // pos in the new log file
+        let mut new_pos = 0; // 新日志文件中的位置
         for cmd_pos in &mut self.index.values_mut() {
             let reader = self
                 .readers
                 .get_mut(&cmd_pos.gen)
-                .expect("Cannot find log reader");
+                .expect("无法找到日志读取器");
             if reader.pos != cmd_pos.pos {
                 reader.seek(SeekFrom::Start(cmd_pos.pos))?;
             }
@@ -108,7 +107,7 @@ impl KvStore {
         }
         compaction_writer.flush()?;
 
-        // remove stale log files
+        // 删除过时的日志文件
         let stale_gens: Vec<_> = self
             .readers
             .keys()
@@ -125,22 +124,22 @@ impl KvStore {
         Ok(())
     }
 
-    /// Create a new log file with given generation number and add the reader to the readers map.
+    /// 使用给定的生成编号创建一个新的日志文件，并将读取器添加到 readers 映射中。
     ///
-    /// Returns the writer to the log.
+    /// 返回日志的写入器。
     fn new_log_file(&mut self, gen: u64) -> Result<BufWriterWithPos<File>> {
         new_log_file(&self.path, gen, &mut self.readers)
     }
 }
 
 impl KvsEngine for KvStore {
-    /// Sets the value of a string key to a string.
+    /// 设置字符串键的值为字符串。
     ///
-    /// If the key already exists, the previous value will be overwritten.
+    /// 如果键已存在，则覆盖其之前的值。
     ///
-    /// # Errors
+    /// # 错误
     ///
-    /// It propagates I/O or serialization errors during writing the log.
+    /// 在写入日志时，会传播 I/O 或序列化错误。
     fn set(&mut self, key: String, value: String) -> Result<()> {
         let cmd = Command::set(key, value);
         let pos = self.writer.pos;
@@ -161,15 +160,15 @@ impl KvsEngine for KvStore {
         Ok(())
     }
 
-    /// Gets the string value of a given string key.
+    /// 获取给定字符串键的字符串值。
     ///
-    /// Returns `None` if the given key does not exist.
+    /// 如果给定的键不存在，则返回 `None`。
     fn get(&mut self, key: String) -> Result<Option<String>> {
         if let Some(cmd_pos) = self.index.get(&key) {
             let reader = self
                 .readers
                 .get_mut(&cmd_pos.gen)
-                .expect("Cannot find log reader");
+                .expect("无法找到日志读取器");
             reader.seek(SeekFrom::Start(cmd_pos.pos))?;
             let cmd_reader = reader.take(cmd_pos.len);
             if let Command::Set { value, .. } = serde_json::from_reader(cmd_reader)? {
@@ -182,20 +181,20 @@ impl KvsEngine for KvStore {
         }
     }
 
-    /// Removes a given key.
+    /// 删除给定的键。
     ///
-    /// # Error
+    /// # 错误
     ///
-    /// It returns `KvsError::KeyNotFound` if the given key is not found.
+    /// 如果给定的键不存在，则返回 `KvsError::KeyNotFound`。
     ///
-    /// It propagates I/O or serialization errors during writing the log.
+    /// 在写入日志时，会传播 I/O 或序列化错误。
     fn remove(&mut self, key: String) -> Result<()> {
         if self.index.contains_key(&key) {
             let cmd = Command::remove(key);
             serde_json::to_writer(&mut self.writer, &cmd)?;
             self.writer.flush()?;
             if let Command::Remove { key } = cmd {
-                let old_cmd = self.index.remove(&key).expect("key not found");
+                let old_cmd = self.index.remove(&key).expect("键未找到");
                 self.uncompacted += old_cmd.len;
             }
             Ok(())
@@ -205,9 +204,9 @@ impl KvsEngine for KvStore {
     }
 }
 
-/// Create a new log file with given generation number and add the reader to the readers map.
+/// 使用给定的生成编号创建一个新的日志文件，并将读取器添加到 readers 映射中。
 ///
-/// Returns the writer to the log.
+/// 返回日志的写入器。
 fn new_log_file(
     path: &Path,
     gen: u64,
@@ -225,7 +224,7 @@ fn new_log_file(
     Ok(writer)
 }
 
-/// Returns sorted generation numbers in the given directory
+/// 返回给定目录中按顺序排列的生成编号列表
 fn sorted_gen_list(path: &Path) -> Result<Vec<u64>> {
     let mut gen_list: Vec<u64> = fs::read_dir(&path)?
         .flat_map(|res| -> Result<_> { Ok(res?.path()) })
@@ -242,18 +241,18 @@ fn sorted_gen_list(path: &Path) -> Result<Vec<u64>> {
     Ok(gen_list)
 }
 
-/// Load the whole log file and store value locations in the index map.
+/// 加载整个日志文件，并将值位置存储在 index 映射中。
 ///
-/// Returns how many bytes can be saved after a compaction.
+/// 返回压缩后可节省的字节数。
 fn load(
     gen: u64,
     reader: &mut BufReaderWithPos<File>,
     index: &mut BTreeMap<String, CommandPos>,
 ) -> Result<u64> {
-    // To make sure we read from the beginning of the file
+    // 确保从文件开头开始读取
     let mut pos = reader.seek(SeekFrom::Start(0))?;
     let mut stream = Deserializer::from_reader(reader).into_iter::<Command>();
-    let mut uncompacted = 0; // number of bytes that can be saved after a compaction
+    let mut uncompacted = 0; // 压缩后可节省的字节数
     while let Some(cmd) = stream.next() {
         let new_pos = stream.byte_offset() as u64;
         match cmd? {
@@ -266,8 +265,8 @@ fn load(
                 if let Some(old_cmd) = index.remove(&key) {
                     uncompacted += old_cmd.len;
                 }
-                // the "remove" command itself can be deleted in the next compaction
-                // so we add its length to `uncompacted`
+                // “remove” 命令本身可以在下一次压缩中被删除，
+                // 因此将其长度添加到 `uncompacted` 中
                 uncompacted += new_pos - pos;
             }
         }
@@ -280,7 +279,7 @@ fn log_path(dir: &Path, gen: u64) -> PathBuf {
     dir.join(format!("{}.log", gen))
 }
 
-/// Struct representing a command
+/// 表示命令的结构体
 #[derive(Serialize, Deserialize, Debug)]
 enum Command {
     Set { key: String, value: String },
@@ -297,7 +296,7 @@ impl Command {
     }
 }
 
-/// Represents the position and length of a json-serialized command in the log
+/// 表示日志中 JSON 序列化命令的位置和长度
 struct CommandPos {
     gen: u64,
     pos: u64,
@@ -377,3 +376,4 @@ impl<W: Write + Seek> Seek for BufWriterWithPos<W> {
         Ok(self.pos)
     }
 }
+```

@@ -1,9 +1,9 @@
-//! Support for Raft and kvraft to save persistent
-//! Raft state (log &c) and k/v server snapshots.
+//! 支持 Raft 和 kvraft 持久化
+//! Raft 状态（日志等）和 k/v 服务器快照。
 //!
-//! we will use the original persister.rs to test your code for grading.
-//! so, while you can modify this code to help you debug, please
-//! test with the original before submitting.
+//! 我们将使用原始的 persister.rs 来测试你的代码以进行评分。
+//! 因此，虽然你可以修改此代码以帮助调试，
+//! 但在提交前请使用原始版本进行测试。
 
 use std::sync::{Arc, Mutex};
 
@@ -47,8 +47,8 @@ impl<T: ?Sized + Sync + Persister> Persister for Arc<T> {
 #[derive(Default)]
 pub struct SimplePersister {
     states: Mutex<(
-        Vec<u8>, // raft state
-        Vec<u8>, // snapshot
+        Vec<u8>, // raft 状态
+        Vec<u8>, // 快照
     )>,
 }
 

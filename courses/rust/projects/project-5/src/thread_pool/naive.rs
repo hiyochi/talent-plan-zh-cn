@@ -3,8 +3,7 @@ use std::thread;
 use super::ThreadPool;
 use crate::Result;
 
-/// It is actually not a thread pool. It spawns a new thread every time
-/// the `spawn` method is called.
+/// 实际上它不是一个线程池，每次调用 `spawn` 方法时都会创建一个新线程。
 #[derive(Clone)]
 pub struct NaiveThreadPool;
 

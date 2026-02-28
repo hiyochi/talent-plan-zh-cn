@@ -2,7 +2,7 @@ use super::ThreadPool;
 use crate::{KvsError, Result};
 use std::sync::Arc;
 
-/// Wrapper of rayon::ThreadPool
+/// Rayon::ThreadPool 的包装器
 #[derive(Clone)]
 pub struct RayonThreadPool(Arc<rayon::ThreadPool>);
 

@@ -1,9 +1,9 @@
-use futures::executor::block_on;
-use prost_derive::Message;
+使用 futures::executor::block_on;
+使用 prost_derive::Message;
 
-use labrpc::*;
+使用 labrpc::*;
 
-/// A Hand-written protobuf messages
+/// 手写的 protobuf 消息
 #[derive(Clone, PartialEq, Message)]
 pub struct Echo {
     #[prost(int64, tag = "1")]
@@ -15,7 +15,7 @@ service! {
         rpc ping(Echo) returns (Echo);
     }
 }
-use echo::{add_service, Client, Service};
+使用 echo::{add_service, Client, Service};
 
 #[derive(Clone)]
 struct EchoService;

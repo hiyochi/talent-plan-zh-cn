@@ -21,7 +21,7 @@ const DEFAULT_ENGINE: Engine = Engine::kvs;
 struct Opt {
     #[structopt(
         long,
-        help = "Sets the listening address",
+        help = "设置监听地址",
         value_name = "IP:PORT",
         raw(default_value = "DEFAULT_LISTENING_ADDRESS"),
         parse(try_from_str)
@@ -29,7 +29,7 @@ struct Opt {
     addr: SocketAddr,
     #[structopt(
         long,
-        help = "Sets the storage engine",
+        help = "设置存储引擎",
         value_name = "ENGINE-NAME",
         raw(possible_values = "&Engine::variants()")
     )]
@@ -53,7 +53,7 @@ fn main() {
             opt.engine = curr_engine;
         }
         if curr_engine.is_some() && opt.engine != curr_engine {
-            error!("Wrong engine!");
+            error!("引擎不正确！");
             exit(1);
         }
         run(opt)
@@ -67,10 +67,10 @@ fn main() {
 fn run(opt: Opt) -> Result<()> {
     let engine = opt.engine.unwrap_or(DEFAULT_ENGINE);
     info!("kvs-server {}", env!("CARGO_PKG_VERSION"));
-    info!("Storage engine: {}", engine);
-    info!("Listening on {}", opt.addr);
+    info!("存储引擎: {}", engine);
+    info!("监听地址: {}", opt.addr);
 
-    // write engine to engine file
+    // 将引擎写入 engine 文件
     fs::write(current_dir()?.join("engine"), format!("{}", engine))?;
 
     let concurrency = num_cpus::get() as u32;
@@ -103,7 +103,7 @@ fn current_engine() -> Result<Option<Engine>> {
     match fs::read_to_string(engine)?.parse() {
         Ok(engine) => Ok(Some(engine)),
         Err(e) => {
-            warn!("The content of engine file is invalid: {}", e);
+            warn!("engine 文件内容无效: {}", e);
             Ok(None)
         }
     }

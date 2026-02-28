@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// BenchmarkMergeSort 测试归并排序的性能
 func BenchmarkMergeSort(b *testing.B) {
 	numElements := 16 << 20
 	src := make([]int64, numElements)
@@ -20,6 +21,7 @@ func BenchmarkMergeSort(b *testing.B) {
 	}
 }
 
+// BenchmarkNormalSort 测试 Go 标准库 sort.Slice 的性能
 func BenchmarkNormalSort(b *testing.B) {
 	numElements := 16 << 20
 	src := make([]int64, numElements)

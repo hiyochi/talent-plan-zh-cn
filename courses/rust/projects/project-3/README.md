@@ -1,171 +1,126 @@
-# PNA Rust Project 3: Synchronous client-server networking
+# PNA Rust 项目 3：同步客户端-服务器网络
 
-**Task**: Create a _single-threaded_, persistent key/value store _server and client
-with synchronous networking over a custom protocol_.
+**任务**：创建一个**单线程**、持久化的键值存储**服务器和客户端**，使用**自定义协议**进行同步网络通信。
 
-**Goals**:
+**目标**：
 
-- Create a client-server application
-- Write a custom protocol with `std` networking APIs
-- Introduce logging to the server
-- Implement pluggable backends with traits
-- Benchmark the hand-written backend against `sled`
+- 创建客户端-服务器应用程序
+- 使用 `std` 网络 API 编写自定义协议
+- 为服务器引入日志记录
+- 使用特质实现可插拔的后端
+- 将手写后端与 `sled` 进行基准测试
 
-**Topics**: `std::net`, logging, traits, benchmarking.
+**主题**：`std::net`、日志记录、特质、基准测试。
 
-<!-- TODO **Extensions**: shutdown on signal. -->
+<!-- TODO **扩展**：在信号下关闭。 -->
 
-- [Introduction](#user-content-introduction)
-- [Project spec](#user-content-project-spec)
-- [Project setup](#user-content-project-setup)
-- [Part 1: Command line parsing](#user-content-part-1-command-line-parsing)
-- [Part 2: Logging](#user-content-part-2-logging)
-- [Part 3: Client-server networking setup](#user-content-part-3-client-server-networking-setup)
-- [Part 4: Implementing commands across the network](#user-content-part-4-implementing-commands-across-the-network)
-- [Part 5: Pluggable storage engines](#user-content-part-5-pluggable-storage-engines)
-- [Part 6: Benchmarking](#user-content-part-6-benchmarking)
+- [简介](#user-content-introduction)
+- [项目规范](#user-content-project-spec)
+- [项目设置](#user-content-project-setup)
+- [第一部分：命令行解析](#user-content-part-1-command-line-parsing)
+- [第二部分：日志记录](#user-content-part-2-logging)
+- [第三部分：客户端-服务器网络设置](#user-content-part-3-client-server-networking-setup)
+- [第四部分：跨网络实现命令](#user-content-part-4-implementing-commands-across-the-network)
+- [第五部分：可插拔存储引擎](#user-content-part-5-pluggable-storage-engines)
+- [第六部分：基准测试](#user-content-part-6-benchmarking)
 
-## Introduction
+## 简介
 
-In this project you will create a simple key/value server and client. They will
-communicate with a custom networking protocol of your design. You will emit logs
-using standard logging crates, and handle errors correctly across the network
-boundary. Once you have a working client-server architecture,
-then you will abstract the storage engine behind traits, and compare
-the performance of yours to the [`sled`] engine.
+在本项目中，您将创建一个简单的键值服务器和客户端。它们将通过您设计的自定义网络协议进行通信。您将使用标准日志库输出日志，并正确处理跨网络边界的错误。一旦您拥有一个正常工作的客户端-服务器架构，您将通过特质抽象存储引擎，并将您的实现与 [`sled`] 引擎的性能进行比较。
 
-## Project spec
+## 项目规范
 
-The cargo project, `kvs`, builds a command-line key-value store client called
-`kvs-client`, and a key-value store server called `kvs-server`, both of which in
-turn call into a library called `kvs`. The client speaks to the server over
-a custom protocol.
+cargo 项目 `kvs` 构建两个命令行键值存储工具：`kvs-client`（客户端）和 `kvs-server`（服务器），二者均调用一个名为 `kvs` 的库。客户端通过自定义协议与服务器通信。
 
-The `kvs-server` executable supports the following command line arguments:
+`kvs-server` 可执行文件支持以下命令行参数：
 
 - `kvs-server [--addr IP-PORT] [--engine ENGINE-NAME]`
 
-  Start the server and begin listening for incoming connections. `--addr`
-  accepts an IP address, either v4 or v6, and a port number, with the format
-  `IP:PORT`. If `--addr` is not specified then listen on `127.0.0.1:4000`.
+  启动服务器并开始监听传入连接。`--addr` 接受一个 IP 地址（IPv4 或 IPv6）和端口号，格式为 `IP:PORT`。如果未指定 `--addr`，则监听 `127.0.0.1:4000`。
 
-  If `--engine` is specified, then `ENGINE-NAME` must be either "kvs", in which
-  case the built-in engine is used, or "sled", in which case sled is used. If
-  this is the first run (there is no data previously persisted) then the default
-  value is "kvs"; if there is previously persisted data then the default is the
-  engine already in use. If data was previously persisted with a different
-  engine than selected, print an error and exit with a non-zero exit code.
+  如果指定了 `--engine`，则 `ENGINE-NAME` 必须是 "kvs"（使用内置引擎）或 "sled"（使用 sled）。如果是首次运行（无先前持久化数据），默认值为 "kvs"；如果存在先前持久化的数据，则默认使用已使用的引擎。如果先前持久化的数据使用的是与当前选择不同的引擎，请打印错误并以非零退出码退出。
 
-  Print an error and return a non-zero exit code on failure to bind a socket, if
-  `ENGINE-NAME` is invalid, if `IP-PORT` does not parse as an address.
+  如果绑定套接字失败、`ENGINE-NAME` 无效或 `IP-PORT` 无法解析为地址，请打印错误并返回非零退出码。
 
 - `kvs-server -V`
 
-  Print the version.
+  打印版本号。
 
-The `kvs-client` executable supports the following command line arguments:
+`kvs-client` 可执行文件支持以下命令行参数：
 
 - `kvs-client set <KEY> <VALUE> [--addr IP-PORT]`
 
-  Set the value of a string key to a string.
+  将字符串键的值设置为字符串。
 
-  `--addr` accepts an IP address, either v4 or v6, and a port number, with the
-  format `IP:PORT`. If `--addr` is not specified then connect on
-  `127.0.0.1:4000`.
+  `--addr` 接受一个 IP 地址（IPv4 或 IPv6）和端口号，格式为 `IP:PORT`。如果未指定 `--addr`，则连接到 `127.0.0.1:4000`。
 
-  Print an error and return a non-zero exit code on server error,
-  or if `IP-PORT` does not parse as an address.
+  如果服务器出错或 `IP-PORT` 无法解析为地址，请打印错误并返回非零退出码。
 
 - `kvs-client get <KEY> [--addr IP-PORT]`
 
-  Get the string value of a given string key.
+  获取指定字符串键的字符串值。
 
-  `--addr` accepts an IP address, either v4 or v6, and a port number, with the
-  format `IP:PORT`. If `--addr` is not specified then connect on
-  `127.0.0.1:4000`.
+  `--addr` 接受一个 IP 地址（IPv4 或 IPv6）和端口号，格式为 `IP:PORT`。如果未指定 `--addr`，则连接到 `127.0.0.1:4000`。
 
-  Print an error and return a non-zero exit code on server error,
-  or if `IP-PORT` does not parse as an address.
+  如果服务器出错或 `IP-PORT` 无法解析为地址，请打印错误并返回非零退出码。
 
 - `kvs-client rm <KEY> [--addr IP-PORT]`
 
-  Remove a given string key.
+  删除指定的字符串键。
 
-  `--addr` accepts an IP address, either v4 or v6, and a port number, with the
-  format `IP:PORT`. If `--addr` is not specified then connect on
-  `127.0.0.1:4000`.
+  `--addr` 接受一个 IP 地址（IPv4 或 IPv6）和端口号，格式为 `IP:PORT`。如果未指定 `--addr`，则连接到 `127.0.0.1:4000`。
 
-  Print an error and return a non-zero exit code on server error,
-  or if `IP-PORT` does not parse as an address. A "key not found" is also
-  treated as an error in the "rm" command.
+  如果服务器出错、`IP-PORT` 无法解析为地址，或键不存在（"key not found"），请打印错误并返回非零退出码。
 
 - `kvs-client -V`
 
-  Print the version.
+  打印版本号。
 
-All error messages should be printed to stderr.
+所有错误消息应打印到 stderr。
 
-The `kvs` library contains four types:
+`kvs` 库包含四种类型：
 
-- `KvsClient` - implements the functionality required for `kvs-client` to speak
-  to `kvs-server`
-- `KvsServer` - implements the functionality to serve responses to `kvs-client`
-  from `kvs-server`
-- `KvsEngine` trait - defines the storage interface called by `KvsServer`
-- `KvStore` - implements by hand the `KvsEngine` trait
-- `SledKvsEngine` - implements `KvsEngine` for the [`sled`] storage engine.
+- `KvsClient` — 实现 `kvs-client` 与 `kvs-server` 通信所需的功能
+- `KvsServer` — 实现 `kvs-server` 向 `kvs-client` 提供响应的功能
+- `KvsEngine` 特质 — 定义 `KvsServer` 调用的存储接口
+- `KvStore` — 手动实现 `KvsEngine` 特质
+- `SledKvsEngine` — 为 [`sled`] 存储引擎实现 `KvsEngine`
 
 [`sled`]: https://github.com/spacejam/sled
 
-The design of `KvsClient` and `KvsServer` are up to you, and will be informed by
-the design of your network protocol. The test suite does not directly use either
-type, but only exercises them via the CLI.
+`KvsClient` 和 `KvsServer` 的设计由您决定，将受您网络协议设计的影响。测试套件不直接使用这两种类型，仅通过 CLI 进行测试。
 
-The `KvsEngine` trait supports the following methods:
+`KvsEngine` 特质支持以下方法：
 
 - `KvsEngine::set(&mut self, key: String, value: String) -> Result<()>`
 
-  Set the value of a string key to a string.
+  将字符串键的值设置为字符串。
 
-  Return an error if the value is not written successfully.
+  如果值未成功写入，则返回错误。
 
 - `KvsEngine::get(&mut self, key: String) -> Result<Option<String>>`
 
-  Get the string value of a string key.
-  If the key does not exist, return `None`.
+  获取字符串键的字符串值。如果键不存在，则返回 `None`。
 
-  Return an error if the value is not read successfully.
+  如果值未成功读取，则返回错误。
 
 - `KvsEngine::remove(&mut self, key: String) -> Result<()>`
 
-  Remove a given string key.
+  删除指定的字符串键。
 
-  Return an error if the key does not exit or value is not read successfully.
+  如果键不存在或值未成功读取，则返回错误。
 
-When setting a key to a value, `KvStore` writes the `set` command to disk in
-a sequential log. When removing a key, `KvStore` writes the `rm` command to
-the log. On startup, the commands in the log are re-evaluated and the
-log pointer (file offset) of the last command to set each key recorded in the
-in-memory index.
+当设置键值时，`KvStore` 将 `set` 命令以顺序日志形式写入磁盘。删除键时，`KvStore` 将 `rm` 命令写入日志。启动时，重新评估日志中的命令，并在内存索引中记录每个键最后一次设置命令的日志指针（文件偏移量）。
 
-When retrieving a value for a key with the `get` command, it searches the index,
-and if found then loads from the log, and evaluates, the command at the
-corresponding log pointer.
+当使用 `get` 命令检索键值时，它在索引中搜索，如果找到，则从对应日志指针处加载日志并执行该命令。
 
-When the size of the uncompacted log entries reach a given threshold, `KvStore`
-compacts it into a new log, removing redundant entries to reclaim disk space.
+当未压缩的日志条目大小达到给定阈值时，`KvStore` 将其压缩为新日志，移除冗余条目以回收磁盘空间。
 
+## 项目设置
 
+继续您之前的项目，删除之前的 `tests` 目录，并将本项目的 `tests` 目录复制到其位置。本项目应包含一个名为 `kvs` 的库，以及两个可执行文件：`kvs-server` 和 `kvs-client`。<!-- TODO 解释如何协调两个二进制文件与现有代码 -->
 
-## Project setup
-
-Continuing from your previous project, delete your previous `tests` directory and
-copy this project's `tests` directory into its place. This project should
-contain a library named `kvs`, and two executables, `kvs-server` and
-`kvs-client`. <!-- TODO explain how to reconcile the two bins with the existing
-code -->
-
-You need the following dev-dependencies in your `Cargo.toml`:
+您需要在 `Cargo.toml` 中添加以下开发依赖项：
 
 ```toml
 [dev-dependencies]
@@ -177,207 +132,124 @@ tempfile = "3.0.7"
 walkdir = "2.2.7"
 ```
 
-As with previous projects, add enough definitions that the test suite builds.
+与之前的项目一样，添加足够的定义，使测试套件能够构建。
 
+## 第一部分：命令行解析
 
-## Part 1: Command line parsing
+与之前的项目相比，本项目的命令行解析几乎没有新内容。`kvs-client` 二进制文件接受与之前项目相同的命令行参数。现在 `kvs-server` 也有自己的一组命令行参数需要处理，如规范中所述。
 
-There's little new about the command line parsing in this project compared to
-previous projects. The `kvs-client` binary accepts the same command line
-arguments as in previous projects. And now `kvs-server` has its own set of
-command line arguments to handle, as described previously in the spec.
+_为 `kvs-server` 的命令行处理添加占位符。_
 
-_Stub out the `kvs-server` command line handling._
+## 第二部分：日志记录
 
+生产级服务器应用程序通常具有强大且可配置的日志系统。因此，我们现在将为 `kvs-server` 添加日志记录，并在后续过程中寻找有用的日志信息。在开发过程中，通常使用 `debug!` 和 `trace!` 级别的日志进行“打印调试”。
 
-## Part 2: Logging
-
-Production server applications tend to have robust and configurable logging. So
-now we're going to add logging to `kvs-server`, and as we continue will look
-for useful information to log. During development it is common to use logging
-at the `debug!` and `trace!` levels for "println debugging".
-
-There are two prominent logging systems in Rust: [`log`] and [`slog`]. Both
-export similar macros for logging at different levels, like `error!`, `info!`
-etc. Both are extensible, supporting different backends, for logging to the
-console, logging to file, logging to the system log, etc.
+Rust 中有两个主要的日志系统：[`log`] 和 [`slog`]。两者都导出类似的宏，用于在不同级别记录日志，如 `error!`、`info!` 等。两者都可扩展，支持不同的后端，如记录到控制台、文件、系统日志等。
 
 [`log`]: https://docs.rs/log/
 [`slog`]: https://docs.rs/slog/
 
-The major difference is that `log` is fairly simple, logging only formatted
-strings; `slog` is feature-rich, and supports "structured logging", where log
-entries are typed and serialized in easily-parsed formats.
+主要区别在于：`log` 相对简单，仅记录格式化字符串；而 `slog` 功能丰富，支持“结构化日志”，其中日志条目是类型化的，并以易于解析的格式序列化。
 
-`log` dates from the very earliest days of Rust, where it was part of the
-compiler, then part of the standard library, and finally released as its own
-crate. It is maintained by the Rust Project. `slog` is newer and maintained
-independently. Both are widely used.
+`log` 源于 Rust 最早期阶段，曾是编译器的一部分，后成为标准库的一部分，最终作为独立 crate 发布。它由 Rust 项目维护。`slog` 较新，由独立团队维护。两者均被广泛使用。
 
-For both systems, one needs to select a "sink" crate, one that the logger
-sends logs to for display or storage.
+对于这两种系统，都需要选择一个“接收器”（sink）crate，即日志发送到用于显示或存储的组件。
 
-_Read about both of them, choose the one that appeals to you, add them as
-dependencies, then modify `kvs-server` to initialize logging on startup, prior
-to command-line parsing._ Set it up to output to stderr (sending the logs
-elsewhere additionally is fine, but they must go to stderr to pass the tests in
-this project).
+_阅读两者，选择您喜欢的，将其作为依赖项添加，然后修改 `kvs-server` 在启动时初始化日志（在命令行解析之前）。设置为输出到 stderr（额外发送到其他位置也可以，但必须输出到 stderr 才能通过本项目的测试）。_
 
-On startup log the server's version number. Also log the configuration. For now
-that means the IP address and port, and the name of the storage engine.
+启动时记录服务器的版本号。同时记录配置信息。目前这意味着 IP 地址和端口，以及存储引擎的名称。
 
+## 第三部分：客户端-服务器网络设置
 
-## Part 3: Client-server networking setup
-
-Next we're going to set up the networking. For this project you are going to be
-using the basic TCP/IP networking APIs in `std::net`: [`TcpListener`] and
-[`TcpStream`].
+接下来，我们将设置网络。在本项目中，您将使用 `std::net` 中的基本 TCP/IP 网络 API：[`TcpListener`] 和 [`TcpStream`]。
 
 [`TcpListener`]: https://doc.rust-lang.org/std/net/struct.TcpListener.html
 [`TcpStream`]: https://doc.rust-lang.org/std/net/struct.TcpStream.html
 
-For this project, the server is synchronous and single-threaded. That means that
-you will listen on a socket, then accept connections, and execute and respond to
-commands one at a time. In the future we will re-visit this decision multiple
-times on our journey toward an asynchronous, multi-threaded, and
-high-performance database.
+本项目中，服务器是同步且单线程的。这意味着您将监听一个套接字，然后接受连接，并逐个执行和响应命令。未来我们将多次重新审视这一决策，以逐步实现异步、多线程和高性能数据库。
 
-Think about your manual testing workflow. Now that there are two executables to
-deal with, you'll need a way to run them both at the same time. If you are like
-many, you will use two terminals, running `cargo run --bin kvs-server` in
-one, where it runs until you press CTRL-D, and `cargo run --bin kvs-client`
-in the other.
+思考您的手动测试工作流程。现在有两个可执行文件需要处理，您需要一种同时运行它们的方法。如果您像许多人一样，您将使用两个终端，在一个中运行 `cargo run --bin kvs-server`（它将运行直到您按下 CTRL-D），在另一个中运行 `cargo run --bin kvs-client`。
 
-This is a good opportunity to use the logging macros for debugging. Go ahead and
-log information about every accepted connection.
+这是一个使用日志宏进行调试的好机会。请继续记录每个已接受连接的信息。
 
-_Before thinking about the protocol, modify `kvs-server` to listen
-for and accept connections, and `kvs-client` to initiate connections._
+_在考虑协议之前，修改 `kvs-server` 以监听并接受连接，修改 `kvs-client` 以发起连接。_
 
+## 第四部分：跨网络实现命令
 
-## Part 4: Implementing commands across the network
+在上一个项目中，您定义了数据库接受的命令，并学习了如何使用 `serde` 将它们序列化和反序列化到日志中。
 
-In the last project you defined the commands your database accepts, and learned
-how to serialize and deserialize them to and from the log with `serde`.
+<!-- 上述内容提示您已具备所需的两个工具 -->
 
-<!-- the above is to hint that they already have the two tools they need -->
+现在是时候在网络上传输键值存储了，远程执行之前在单个进程中实现的命令。与上一个项目中为创建日志而进行的文件 I/O 类似，您将使用 `Read` 和 `Write` 特质序列化和流式传输命令。
 
-Now it's time to implement the key/value store over the network, remotely
-executing commands that until now have been implemented within a single process.
-As with the file I/O you worked on in the last project to create the log, you
-will be serializing and streaming commands with the `Read` and `Write` traits.
+您将设计一个网络协议。有多种方式将数据输入/输出 TCP 流，需要做出许多决策：是基于文本的协议还是二进制协议？数据如何从内存格式转换为字节流格式？是每个连接一个请求，还是多个请求？
 
-You are going to design a network protocol. There are a number of ways to get
-data in and out of a TCP stream, and a number of decisions to make. Is it a
-text-based protocol, binary? How is the data translated from its format in
-memory to its format byte-stream format? Is there a single request per
-connection, or many?
+请记住，它必须支持成功结果和错误，现在有两种错误：由您的存储引擎生成的错误，以及网络错误。
 
-Keep in mind that it must support successful results and errors, and there are
-two kinds of errors now: the ones generated by your storage engine, as well as
-network errors.
+协议的所有细节均由您决定。测试套件完全不关心数据如何在两端之间传输，只关心结果是否正确。
 
-All the details of the protocol are up to you. The test suite does not care at
-all how the data gets from one end to the other, just that the results are
-correct.
+_编写您的网络协议。_
 
-_Write your network protocol._
+<!-- ## 第五部分：更多错误处理
 
+TODO 编写本节
 
-<!-- ## Part 5: More error handling
-
-TODO write this section
-
-- handle error responses by converting errors to a serializable format
-- add context to errors
-- replace `fn main() -> Result` with custom error reporting
+- 通过将错误转换为可序列化格式来处理错误响应
+- 为错误添加上下文
+- 将 `fn main() -> Result` 替换为自定义错误报告
 -->
 
+## 第五部分：可插拔存储引擎
 
-## Part 5: Pluggable storage engines
+您的数据库有一个由您实现的存储引擎 `KvStore`。现在您将添加第二个存储引擎。
 
-Your database has a storage engine, `KvStore`, implemented by you.
-Now you are going to add a second storage engine.
+有多个原因这样做：
 
-There are multiple reasons to do so:
+- 不同的工作负载需要不同的性能特征。某些存储引擎可能在特定工作负载下表现更好。
 
-- Different workloads require different performance characteristics. Some
-  storage engines may work better than other based on the workload.
+- 它创建了一个熟悉的框架，用于比较不同的后端。
 
-- It creates a familiar framework for comparing different backends.
+- 它为我们提供了一个创建和使用特质的理由。
 
-- It gives us an excuse to create and work with traits.
+- 它为我们提供了一个编写一些比较基准测试的理由！
 
-- It gives us an excuse to write some comparative benchmarks!
+因此，您将从 `KvStore` 接口中**提取**一个新的特质 `KvsEngine`。这是一个经典的**重构**，其中现有代码逐步转变为新形式。重构时，您通常希望将工作分解为最小的变更，以确保持续构建和运行。
 
-So you are going to _extract_ a new trait, `KvsEngine`, from the `KvStore`
-interface. This is a classic _refactoring_, where existing code is transformed
-into a new form incrementally. When refactoring you will generally want to break
-the work up into the smallest changes that will continue to build and work.
+您最终需要的 API 如下：
 
-Here is the API you need to end up with:
+- `trait KvsEngine` 具有与 `KvStore` 相同签名的 `get`、`set` 和 `remove` 方法。
 
-- `trait KvsEngine` has `get`, `set` and `remove` methods with the same signatures
-  as `KvStore`.
+- `KvStore` 实现 `KvsEngine`，不再拥有自己的 `get`、`set` 和 `remove` 方法。
 
-- `KvStore` implements `KvsEngine`, and no longer has `get`, `set` and `remove`
-  methods of its own.
+- 新增一个 `KvsEngine` 的实现 `SledKvsEngine`。您稍后需使用 `sled` 库填充其 `get` 和 `set` 方法。
 
-- There is a new implementation of `KvsEngine`, `SledKvsEngine`. You need to fill
-  its `get` and `set` methods using the `sled` library later.
+您可能已经为这些定义添加了占位符（如果您的测试正在构建）。_现在是填充它们的时候了。将您的重构分解为一系列有意的变更，并确保项目在继续之前持续构建并通过之前通过的测试。_
 
-It's likely that you have already stubbed out the definitions for these if your
-tests are building. _Now is the time to fill them in._ Break down your
-refactoring into an intentional sequence of changes, and make sure the project
-continues to build and pass previously-passing tests before continuing.
+作为最后一步，您需要考虑当 `kvs-server` 以一个引擎启动、被终止，然后以不同引擎重新启动时会发生什么。这种情况只能导致错误，您需要弄清楚如何检测这种情况并报告错误。测试 `cli_wrong_engine` 反映了此场景。
 
-As one final step, you need to consider what happens when `kvs-server` is
-started with one engine, is killed, then restarted with a different engine. This
-case can only result in an error, and you need to figure out how to detect the
-case to report the error. The test `cli_wrong_engine` reflects this scenario.
+## 第六部分：基准测试
 
+随着课程的推进，我们将越来越关注数据库的性能，探索不同架构的影响。我们鼓励您超越此处描述的模型，尝试自己的优化。
 
-## Part 6: Benchmarking
-
-As the course progresses we will increasingly concern ourselves with the
-performance of the database, exploring the impact of different architectures.
-You are encouraged to go beyond the model described herein and experiment with
-your own optimizations.
-
-Performance work requires benchmarking, so now we're going to get started
-on that. There are many ways to benchmark databases, with standard test
-suites like [ycsb] and [sysbench]. In Rust benchmarking starts with
-the builtin tooling, so we will start there.
+性能工作需要基准测试，因此我们现在开始。有多种方式对数据库进行基准测试，如标准测试套件 [ycsb] 和 [sysbench]。在 Rust 中，基准测试从内置工具开始，我们将从这里入手。
 
 [ycsb]: https://github.com/brianfrankcooper/YCSB
 [sysbench]: https://github.com/akopytov/sysbench
 
-Cargo supports benchmarking with `cargo bench`. The benchmarks may either be
-written using Rust's built in benchmark harness, or an external one.
+Cargo 支持使用 `cargo bench` 进行基准测试。基准测试可以使用 Rust 内置基准测试框架编写，也可以使用外部框架。
 
-The built-in harness creates benchmarks from functions with the `#[bench]`
-attribute. It cannot be used on the Rust stable channel though, and is only
-documented briefly in [the unstable book][tb] and the [`test` crate docs][tc].
-It is though widely used throughout the Rust ecosystem &mdash; crates that use
-it, even if they compile with stable releases, do benchmarking with nightly
-releases.
+内置框架通过带有 `#[bench]` 属性的函数创建基准测试。但它不能在 Rust 稳定版通道上使用，仅在[不稳定手册][tb]和[`test` crate 文档][tc]中简要记录。尽管如此，它在整个 Rust 生态系统中被广泛使用 —— 即使使用稳定版编译的 crate，也使用夜间版进行基准测试。
 
 [tb]: https://doc.rust-lang.org/stable/unstable-book/library-features/test.html
 [tc]: https://doc.rust-lang.org/stable/test/index.html
 
-That system though is effectively deprecated &mdash; it is not being updated and
-will seemingly never be promoted to the stable release channel.
+然而，该系统实际上已被弃用 —— 它不再更新，似乎永远不会被提升到稳定版通道。
 
-There are better benchmark harnesses for Rust anyway. The one you will use is
-[criterion]. And you will use it to satisfy your curiosity about the
-performance of your `kvs` engine compared to the `sled` engine.
+Rust 中有更好的基准测试框架。您将使用的是 [criterion]。您将使用它来满足您对 `kvs` 引擎与 `sled` 引擎性能的疑问。
 
-These benchmarking tools work by defining a benchmarking function, and within
-that function iterating through a loop that performs the operation to be
-benchmarking. The benchmarking tool will iterate as many times as it needs to in
-order to know the duration of the operation with statistical significance.
+这些基准测试工具通过定义一个基准测试函数，并在该函数中循环执行要基准测试的操作来工作。基准测试工具将循环尽可能多次，以统计显著性地确定操作的持续时间。
 
-See this basic example from the criterion guide:
+请参阅 criterion 指南中的这个基本示例：
 
 ```rust
 fn criterion_benchmark(c: &mut Criterion) {
@@ -389,98 +261,74 @@ fn criterion_benchmark(c: &mut Criterion) {
 }
 ```
 
-The call to `bench_function` defines the benchmark, and the call to `iter`
-defines the code that is run for the benchmark. Code before and after the call
-to `iter` is not timed.
+`bench_function` 的调用定义了基准测试，`iter` 的调用定义了基准测试中运行的代码。`iter` 之前和之后的代码不会被计时。
 
 [criterion]: https://docs.rs/criterion
 
-Prepare for writing benchmarks by creating a file called `benches/benches.rs`.
-Like `tests/tests.rs`, cargo will automatically find this file and compile it as
-a benchmark.
+通过创建一个名为 `benches/benches.rs` 的文件为编写基准测试做准备。与 `tests/tests.rs` 一样，cargo 将自动找到此文件并将其编译为基准测试。
 
-Start by writing the following benchmarks:
+首先编写以下基准测试：
 
-- `kvs_write` - With the kvs engine, write 100 values with random keys of length
-  1-100000 bytes and random values of length 1-100000 bytes.
+- `kvs_write` — 使用 kvs 引擎，写入 100 个值，键的长度为 1-100000 字节，值的长度为 1-100000 字节（随机）。
 
-- `sled_write`- With the sled engine, write 100 values with random keys of
-  length 1-100000 bytes and random values of length 1-100000 bytes.
+- `sled_write` — 使用 sled 引擎，写入 100 个值，键的长度为 1-100000 字节，值的长度为 1-100000 字节（随机）。
 
-- `kvs_read` - With the kvs engine, read 1000 values from previously written keys,
-  with keys and values of random length.
+- `kvs_read` — 使用 kvs 引擎，从先前写入的键中读取 1000 个值，键和值长度随机。
 
-- `sled_read` - With the sled engine, read 1000 values from previously written keys,
-  with keys and values of random length.
+- `sled_read` — 使用 sled 引擎，从先前写入的键中读取 1000 个值，键和值长度随机。
 
-(As an alternative to writing 4 benchmarks, you may also choose to write 2
-benchmarks parameterized over the engine, as [described in the criterion
-manual][pb]).
+（作为替代方案，您也可以选择编写 2 个参数化引擎的基准测试，如 [criterion 手册][pb] 所述）。
 
 [pb]: https://bheisler.github.io/criterion.rs/book/user_guide/benchmarking_with_inputs.html
 
-These are underspecified, and there's a fair bit of nuance to implementing them
-in a useful way. We need to consider at least three factors:
+这些基准测试未完全指定，实现起来有相当多的细微差别。我们需要至少考虑三个因素：
 
-- What code should be timed (and be written inside the benchmark loop), and what
-  code should not (and be written outside the benchmark loop)?
+- 哪些代码应被计时（写在基准测试循环内），哪些不应被计时（写在循环外）？
 
-- How to make the loop run identically for each iteration, despite using
-  "random" numbers.
+- 如何确保每次迭代的循环行为一致，尽管使用了“随机”数字？
 
-- In the "read" benchmarks, how to read from the same set of "random" keys
-  that were written previously.
+- 在“读取”基准测试中，如何读取与之前写入相同的“随机”键集？
 
-These are all inter-related: some code needs to be carefully selected as
-un-timed setup code, and the seed values for random number generators need
-to be re-used appropriately.
+这些因素相互关联：需要仔细选择未计时的设置代码，并适当重用随机数生成器的种子值。
 
-In all cases, operations that may return errors should assert (with `assert!`)
-that they did not return an error; and in the read case, "get" operations should
-assert that the key was found.
+在所有情况下，可能返回错误的操作应断言（使用 `assert!`）它们未返回错误；在读取情况下，“get” 操作应断言键被找到。
 
-Random numbers can be generated with the [`rand`] crate.
+随机数可以使用 [`rand`] crate 生成。
 
 [`rand`]: https://docs.rs/crate/rand/
 
-Once you have your benchmarks, run them with `cargo bench`.
+一旦您编写了基准测试，使用 `cargo bench` 运行它们。
 
-_Write the above benchmarks, and compare the results between `kvs` and `sled`._
+_编写上述基准测试，并比较 `kvs` 和 `sled` 之间的结果。_
 
-_Note: please run the benchmarks on an otherwise unloaded machine. Benchmark
-results are very sensitive to the environment they are run in, and while the
-criterion library does its best to compensate for "noise", benchmarks are best
-done on a clean machine without other active processes. If you have a spare
-machine just for development, use that. If not, an AWS or other cloud instance
-may produce more consistent results than your local desktop._
+_注意：请在其他进程未运行的机器上运行基准测试。基准测试结果对运行环境非常敏感，尽管 criterion 库尽力补偿“噪声”，但最好在干净的机器上进行基准测试，没有其他活动进程。如果您有一台专门用于开发的备用机器，请使用它。如果没有，AWS 或其他云实例可能比您的本地桌面产生更一致的结果。_
 
-<!-- TODO: criterion output example -->
+<!-- TODO: criterion 输出示例 -->
 
-Nice coding, friend. Enjoy a nice break.
-
+编码愉快，朋友。享受一段美好的休息吧。
 
 <!-- TODO
-## Extension 1: Signal handling
+## 扩展 1：信号处理
 
-- Shutdown on KILL
-- TODO need to figure out how to interrupt the tcp listener
+- 在 KILL 信号下关闭
+- TODO 需要弄清楚如何中断 tcp 监听器
 -->
 
 <!--
 
-## Background reading ideas
+## 背景阅读建议
 
-- log docs
-- slog docs
-- TCP/IP basics
-- refactoring overview
-- traits and impl trait
+- log 文档
+- slog 文档
+- TCP/IP 基础知识
+- 重构概述
+- 特质和 impl trait
 - https://bheisler.github.io/post/benchmarking-with-criterion-rs/
-- general overview of benchmarking
-- conditional compilation of engines?
+- 基准测试概览
+- 引擎的条件编译？
 
 ## TODOs
 
-- consider `Kvs_Engine_` trait vs `Kv_Store_` impl
+- 考虑 `Kvs_Engine_` 特质 vs `Kv_Store_` 实现
 
 -->

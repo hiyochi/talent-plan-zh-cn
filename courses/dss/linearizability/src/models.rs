@@ -1,3 +1,4 @@
+```rust
 use std::collections::HashMap;
 
 use super::model::{EventKind, Events, Model, Operations};
@@ -72,8 +73,8 @@ impl Model for KvModel {
     }
 
     fn init(&self) -> Self::State {
-        // note: we are modeling a single key's value here;
-        // we're partitioning by key, so this is okay
+        // 注意：我们在这里建模单个键的值；
+        // 我们按键进行分区，所以这是可以的
         "".to_string()
     }
 
@@ -108,7 +109,7 @@ mod tests {
         let file_name = format!("../linearizability/test_data/{}.txt", &log_name);
         let events = match parse_kv_log(&file_name) {
             Ok(events) => events,
-            Err(e) => panic!("parse kv log {} failed: {}", &file_name, e),
+            Err(e) => panic!("解析 kv 日志 {} 失败: {}", &file_name, e),
         };
         assert_eq!(check_events(model, events), correct);
     }
@@ -264,3 +265,4 @@ mod tests {
         check_kv("c50-bad".to_string(), false)
     }
 }
+```

@@ -65,7 +65,7 @@ fn run(opt: Opt) -> Result<()> {
     info!("Storage engine: {}", engine);
     info!("Listening on {}", opt.addr);
 
-    // write engine to engine file
+    // 将引擎写入 engine 文件
     fs::write(current_dir()?.join("engine"), format!("{}", engine))?;
 
     match engine {
@@ -88,7 +88,7 @@ fn current_engine() -> Result<Option<Engine>> {
     match fs::read_to_string(engine)?.parse() {
         Ok(engine) => Ok(Some(engine)),
         Err(e) => {
-            warn!("The content of engine file is invalid: {}", e);
+            warn!("engine 文件的内容无效: {}", e);
             Ok(None)
         }
     }

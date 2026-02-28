@@ -14,8 +14,8 @@ use rand::{rngs::ThreadRng, Rng};
 use crate::raft::config::{Config, Entry, Storage, SNAPSHOT_INTERVAL};
 use crate::raft::Node;
 
-/// The tester generously allows solutions to complete elections in one second
-/// (much more than the paper's range of timeouts).
+/// 测试者允许解决方案在一秒钟内完成选举
+/// （远远超过论文中规定的超时时间范围）。
 const RAFT_ELECTION_TIMEOUT: Duration = Duration::from_millis(1000);
 
 fn random_entry(rnd: &mut ThreadRng) -> Entry {
@@ -31,22 +31,22 @@ fn test_initial_election_2a() {
 
     cfg.begin("Test (2A): initial election");
 
-    // is a leader elected?
+    // 是否选出了领导者？
     cfg.check_one_leader();
 
-    // sleep a bit to avoid racing with followers learning of the
-    // election, then check that all peers agree on the term.
+    // 稍微休眠一下，避免与跟随者学习选举结果产生竞争，
+    // 然后检查所有节点是否对任期达成一致。
     thread::sleep(Duration::from_millis(50));
     let term1 = cfg.check_terms();
 
-    // does the leader+term stay the same if there is no network failure?
+    // 如果没有网络故障，领导者和任期是否保持不变？
     thread::sleep(2 * RAFT_ELECTION_TIMEOUT);
     let term2 = cfg.check_terms();
     if term1 != term2 {
         warn!("warning: term changed even though there were no failures")
     }
 
-    // there should still be a leader.
+    // 应该仍然存在一个领导者。
     cfg.check_one_leader();
 
     cfg.end();
@@ -59,27 +59,27 @@ fn test_reelection_2a() {
     cfg.begin("Test (2A): election after network failure");
 
     let leader1 = cfg.check_one_leader();
-    // if the leader disconnects, a new one should be elected.
+    // 如果领导者断开连接，应该选出新的领导者。
     cfg.disconnect(leader1);
     cfg.check_one_leader();
 
-    // if the old leader rejoins, that shouldn't
-    // disturb the new leader.
+    // 如果旧领导者重新加入，不应
+    // 干扰新领导者。
     cfg.connect(leader1);
     let leader2 = cfg.check_one_leader();
 
-    // if there's no quorum, no leader should
-    // be elected.
+    // 如果没有法定人数，不应
+    // 选出领导者。
     cfg.disconnect(leader2);
     cfg.disconnect((leader2 + 1) % servers);
     thread::sleep(2 * RAFT_ELECTION_TIMEOUT);
     cfg.check_no_leader();
 
-    // if a quorum arises, it should elect a leader.
+    // 如果形成法定人数，应该选出领导者。
     cfg.connect((leader2 + 1) % servers);
     cfg.check_one_leader();
 
-    // re-join of last node shouldn't prevent leader from existing.
+    // 最后一个节点重新加入不应阻止领导者存在。
     cfg.connect(leader2);
     cfg.check_one_leader();
 
@@ -98,7 +98,7 @@ fn test_many_election_2a() {
 
     let mut random = rand::thread_rng();
     for _ in 0..iters {
-        // disconnect three nodes
+        // 断开三个节点
         let i1 = random.gen::<usize>() % servers;
         let i2 = random.gen::<usize>() % servers;
         let i3 = random.gen::<usize>() % servers;
@@ -106,8 +106,8 @@ fn test_many_election_2a() {
         cfg.disconnect(i2);
         cfg.disconnect(i3);
 
-        // either the current leader should still be alive,
-        // or the remaining four should elect a new one.
+        // 要么当前领导者仍然存活，
+        // 要么剩下的四个节点应选出新的领导者。
         cfg.check_one_leader();
 
         cfg.connect(i1);
@@ -151,21 +151,21 @@ fn test_fail_agree_2b() {
 
     cfg.one(Entry { x: 101 }, servers, false);
 
-    // follower network disconnection
+    // 跟随者网络断开
     let leader = cfg.check_one_leader();
     cfg.disconnect((leader + 1) % servers);
 
-    // agree despite one disconnected server?
+    // 尽管有一个服务器断开连接，仍能达成一致？
     cfg.one(Entry { x: 102 }, servers - 1, false);
     cfg.one(Entry { x: 103 }, servers - 1, false);
     thread::sleep(RAFT_ELECTION_TIMEOUT);
     cfg.one(Entry { x: 104 }, servers - 1, false);
     cfg.one(Entry { x: 105 }, servers - 1, false);
 
-    // re-connect
+    // 重新连接
     cfg.connect((leader + 1) % servers);
 
-    // agree with full set of servers?
+    // 与全部服务器集达成一致？
     cfg.one(Entry { x: 106 }, servers, true);
     thread::sleep(RAFT_ELECTION_TIMEOUT);
     cfg.one(Entry { x: 107 }, servers, true);
@@ -182,7 +182,7 @@ fn test_fail_no_agree_2b() {
 
     cfg.one(Entry { x: 10 }, servers, false);
 
-    // 3 of 5 followers disconnect
+    // 5个跟随者中有3个断开连接
     let leader = cfg.check_one_leader();
     cfg.disconnect((leader + 1) % servers);
     cfg.disconnect((leader + 2) % servers);
@@ -203,13 +203,13 @@ fn test_fail_no_agree_2b() {
         panic!("{} committed but no majority", n);
     }
 
-    // repair
+    // 修复
     cfg.connect((leader + 1) % servers);
     cfg.connect((leader + 2) % servers);
     cfg.connect((leader + 3) % servers);
 
-    // the disconnected majority may have chosen a leader from
-    // among their own ranks, forgetting index 2.
+    // 断开连接的多数派可能已从他们自己中选出领导者，
+    // 忘记了索引2。
     let leader2 = cfg.check_one_leader();
     let (index2, _) = cfg.rafts.lock().unwrap()[leader2]
         .as_ref()
@@ -234,7 +234,7 @@ fn test_concurrent_starts_2b() {
     let mut success = false;
     'outer: for tried in 0..5 {
         if tried > 0 {
-            // give solution some time to settle
+            // 给解决方案一些时间稳定下来
             thread::sleep(Duration::from_secs(3));
         }
 
@@ -286,7 +286,7 @@ fn test_concurrent_starts_2b() {
         for j in 0..servers {
             let t = cfg.rafts.lock().unwrap()[j].as_ref().unwrap().term();
             if t != term {
-                // term changed -- can't expect low RPC counts
+                // 任期已改变——不能期望RPC数量较低
                 continue 'outer;
             }
         }
@@ -296,9 +296,8 @@ fn test_concurrent_starts_2b() {
             if let Some(cmd) = cfg.wait(index, servers, Some(term)) {
                 cmds.push(cmd.x);
             } else {
-                // peers have moved on to later terms
-                // so we can't expect all Start()s to
-                // have succeeded
+                // 节点已进入后续任期
+                // 因此不能期望所有Start()都成功
                 continue;
             }
         }
@@ -332,11 +331,11 @@ fn test_rejoin_2b() {
 
     cfg.one(Entry { x: 101 }, servers, true);
 
-    // leader network failure
+    // 领导者网络故障
     let leader1 = cfg.check_one_leader();
     cfg.disconnect(leader1);
 
-    // make old leader try to agree on some entries
+    // 让旧领导者尝试就某些条目达成一致
     let _ = cfg.rafts.lock().unwrap()[leader1]
         .as_ref()
         .unwrap()
@@ -350,19 +349,19 @@ fn test_rejoin_2b() {
         .unwrap()
         .start(&Entry { x: 104 });
 
-    // new leader commits, also for index=2
+    // 新领导者提交，同样适用于索引=2
     cfg.one(Entry { x: 103 }, 2, true);
 
-    // new leader network failure
+    // 新领导者网络故障
     let leader2 = cfg.check_one_leader();
     cfg.disconnect(leader2);
 
-    // old leader connected again
+    // 旧领导者重新连接
     cfg.connect(leader1);
 
     cfg.one(Entry { x: 104 }, 2, true);
 
-    // all together now
+    // 现在全部在一起
     cfg.connect(leader2);
 
     cfg.one(Entry { x: 105 }, servers, true);
@@ -380,13 +379,13 @@ fn test_backup_2b() {
     let mut random = rand::thread_rng();
     cfg.one(random_entry(&mut random), servers, true);
 
-    // put leader and one follower in a partition
+    // 将领导者和一个跟随者放入分区
     let leader1 = cfg.check_one_leader();
     cfg.disconnect((leader1 + 2) % servers);
     cfg.disconnect((leader1 + 3) % servers);
     cfg.disconnect((leader1 + 4) % servers);
 
-    // submit lots of commands that won't commit
+    // 提交大量不会提交的命令
     for _i in 0..50 {
         let _ = cfg.rafts.lock().unwrap()[leader1]
             .as_ref()
@@ -399,17 +398,17 @@ fn test_backup_2b() {
     cfg.disconnect((leader1 + 0) % servers);
     cfg.disconnect((leader1 + 1) % servers);
 
-    // allow other partition to recover
+    // 允许其他分区恢复
     cfg.connect((leader1 + 2) % servers);
     cfg.connect((leader1 + 3) % servers);
     cfg.connect((leader1 + 4) % servers);
 
-    // lots of successful commands to new group.
+    // 向新组提交大量成功命令。
     for _i in 0..50 {
         cfg.one(random_entry(&mut random), 3, true);
     }
 
-    // now another partitioned leader and one follower
+    // 现在另一个分区领导者及其一个跟随者
     let leader2 = cfg.check_one_leader();
     let mut other = (leader1 + 2) % servers;
     if leader2 == other {
@@ -417,7 +416,7 @@ fn test_backup_2b() {
     }
     cfg.disconnect(other);
 
-    // lots more commands that won't commit
+    // 更多不会提交的命令
     for _i in 0..50 {
         let _ = cfg.rafts.lock().unwrap()[leader2]
             .as_ref()
@@ -427,7 +426,7 @@ fn test_backup_2b() {
 
     thread::sleep(RAFT_ELECTION_TIMEOUT / 2);
 
-    // bring original leader back to life,
+    // 让原始领导者恢复活动，
     for i in 0..servers {
         cfg.disconnect(i);
     }
@@ -435,12 +434,12 @@ fn test_backup_2b() {
     cfg.connect((leader1 + 1) % servers);
     cfg.connect(other);
 
-    // lots of successful commands to new group.
+    // 向新组提交大量成功命令。
     for _i in 0..50 {
         cfg.one(random_entry(&mut random), 3, true);
     }
 
-    // now everyone
+    // 现在所有人
     for i in 0..servers {
         cfg.connect(i);
     }
@@ -475,7 +474,7 @@ fn test_count_2b() {
     let mut success = false;
     'outer: for tried in 0..5 {
         if tried > 0 {
-            // give solution some time to settle
+            // 给解决方案一些时间稳定下来
             thread::sleep(Duration::from_secs(3));
         }
 
@@ -507,7 +506,7 @@ fn test_count_2b() {
             {
                 Ok((index1, term1)) => {
                     if term1 != term {
-                        // Term changed while starting
+                        // 启动时任期已改变
                         continue 'outer;
                     }
                     if starti + i != index1 {
@@ -539,8 +538,8 @@ fn test_count_2b() {
         for j in 0..SERVERS {
             let t = cfg.rafts.lock().unwrap()[j].as_ref().unwrap().term();
             if t != term {
-                // term changed -- can't expect low RPC counts
-                // need to keep going to update total2
+                // 任期已改变——不能期望RPC数量较低
+                // 需要继续更新total2
                 failed = true;
             }
             total2 += cfg.rpc_count(j);
@@ -587,7 +586,7 @@ fn test_persist1_2c() {
 
     cfg.one(Entry { x: 11 }, servers, true);
 
-    // crash and re-start all
+    // 崩溃并重启所有节点
     for i in 0..servers {
         cfg.start1(i);
     }
@@ -611,7 +610,7 @@ fn test_persist1_2c() {
     cfg.start1(leader2);
     cfg.connect(leader2);
 
-    cfg.wait(4, servers, None); // wait for leader2 to join before killing i3
+    cfg.wait(4, servers, None); // 在杀死i3之前等待leader2加入
 
     let i3 = (cfg.check_one_leader() + 1) % servers;
     cfg.disconnect(i3);
@@ -700,14 +699,11 @@ fn test_persist3_2c() {
     cfg.end();
 }
 
-// Test the scenarios described in Figure 8 of the extended Raft paper. Each
-// iteration asks a leader, if there is one, to insert a command in the Raft
-// log.  If there is a leader, that leader will fail quickly with a high
-// probability (perhaps without committing the command), or crash after a while
-// with low probability (most likey committing the command).  If the number of
-// alive servers isn't enough to form a majority, perhaps start a new server.
-// The leader in a new term may try to finish replicating log entries that
-// haven't been committed yet.
+// 测试扩展Raft论文图8中描述的场景。每次迭代都会询问领导者（如果存在）
+// 是否要在Raft日志中插入一条命令。如果存在领导者，该领导者很可能很快失败
+// （可能未提交命令），或者稍后崩溃（很可能已提交命令）。
+// 如果存活的服务器数量不足以形成多数派，可能需要启动新服务器。
+// 新任期中的领导者可能会尝试完成复制尚未提交的日志条目。
 #[test]
 fn test_figure_8_2c() {
     let servers = 5;
@@ -896,8 +892,8 @@ fn internal_churn(unreliable: bool) {
 
     let stop = Arc::new(AtomicUsize::new(0));
 
-    // create concurrent clients
-    // TODO: change it a future
+    // 创建并发客户端
+    // TODO: 将其改为future
     fn cfn(
         me: usize,
         stop_clone: Arc<AtomicUsize>,
@@ -911,7 +907,7 @@ fn internal_churn(unreliable: bool) {
             let x = random.gen::<u64>();
             let mut index: i64 = -1;
             let mut ok = false;
-            // try them all, maybe one of them is a leader
+            // 尝试所有节点，可能其中一个是领导者
             let rafts: Vec<_> = rafts.lock().unwrap().iter().cloned().collect();
             for raft in &rafts {
                 match raft {
@@ -928,8 +924,8 @@ fn internal_churn(unreliable: bool) {
                 }
             }
             if ok {
-                // maybe leader will commit our value, maybe not.
-                // but don't wait forever.
+                // 领导者可能提交我们的值，也可能不提交。
+                // 但不要永远等待。
                 for to in &[10, 20, 50, 100, 200] {
                     let (nd, cmd) = storage.lock().unwrap().n_committed(index as u64);
                     if nd > 0 {
@@ -990,10 +986,9 @@ fn internal_churn(unreliable: bool) {
             }
         }
 
-        // Make crash/restart infrequent enough that the peers can often
-        // keep up, but not so infrequent that everything has settled
-        // down from one change to the next. Pick a value smaller than
-        // the election timeout, but not hugely smaller.
+        // 使崩溃/重启足够频繁，以便节点通常能跟上，
+        // 但又不能太频繁，以免每次变化之间都已稳定下来。
+        // 选择一个小于选举超时但又不小很多的值。
         thread::sleep((RAFT_ELECTION_TIMEOUT * 7) / 10)
     }
 
@@ -1076,21 +1071,21 @@ fn snap_common(name: &str, disconnect: bool, reliable: bool, crash: bool) {
             cfg.crash1(victim);
             cfg.one(random_entry(&mut random), servers - 1, true);
         }
-        // send enough to get a snapshot
+        // 发送足够多的条目以获得快照
         for _ in 0..=SNAPSHOT_INTERVAL {
             let _ = cfg.rafts.lock().unwrap()[sender]
                 .as_ref()
                 .unwrap()
                 .start(&random_entry(&mut random));
         }
-        // let applier threads catch up with the Start()'s
+        // 让应用线程赶上Start()的进度
         cfg.one(random_entry(&mut random), servers - 1, true);
 
         assert!(cfg.log_size() < MAX_LOG_SIZE, "log size too large");
 
         if disconnect {
-            // reconnect a follower, who maybe behind and
-            // needs to receive a snapshot to catch up.
+            // 重新连接跟随者，该跟随者可能落后，
+            // 需要接收快照以赶上进度。
             cfg.connect(victim);
             cfg.one(random_entry(&mut random), servers, true);
             leader1 = cfg.check_one_leader();
